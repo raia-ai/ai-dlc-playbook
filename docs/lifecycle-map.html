@@ -1,0 +1,554 @@
+<title>raia × Claude Code — AI Development Lifecycle</title>
+<style>
+  :root {
+    --paper: #FAF9FC;
+    --card: #FFFFFF;
+    --ink: #201A2E;
+    --ink-soft: #5A5170;
+    --line: #E4E0EE;
+    --line-strong: #C9C2DE;
+    --violet: #6D4AEF;
+    --violet-soft: #F1EDFF;
+    --coral: #C96442;
+    --coral-soft: #FBEFE9;
+    --green: #2E8B6A;
+    --green-soft: #E8F4EE;
+    --amber: #B07C1F;
+    --amber-soft: #F9F1DE;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #16121F;
+      --card: #1E1929;
+      --ink: #EDE9F5;
+      --ink-soft: #A79DC0;
+      --line: #2E2740;
+      --line-strong: #453B60;
+      --violet: #9D85FF;
+      --violet-soft: #2A2344;
+      --coral: #E08D6A;
+      --coral-soft: #3A2822;
+      --green: #4BB98E;
+      --green-soft: #1E322B;
+      --amber: #D9A84E;
+      --amber-soft: #342C1B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #16121F;
+    --card: #1E1929;
+    --ink: #EDE9F5;
+    --ink-soft: #A79DC0;
+    --line: #2E2740;
+    --line-strong: #453B60;
+    --violet: #9D85FF;
+    --violet-soft: #2A2344;
+    --coral: #E08D6A;
+    --coral-soft: #3A2822;
+    --green: #4BB98E;
+    --green-soft: #1E322B;
+    --amber: #D9A84E;
+    --amber-soft: #342C1B;
+  }
+  :root[data-theme="light"] {
+    --paper: #FAF9FC;
+    --card: #FFFFFF;
+    --ink: #201A2E;
+    --ink-soft: #5A5170;
+    --line: #E4E0EE;
+    --line-strong: #C9C2DE;
+    --violet: #6D4AEF;
+    --violet-soft: #F1EDFF;
+    --coral: #C96442;
+    --coral-soft: #FBEFE9;
+    --green: #2E8B6A;
+    --green-soft: #E8F4EE;
+    --amber: #B07C1F;
+    --amber-soft: #F9F1DE;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  header.hero { padding: 64px 0 8px; border-bottom: 1px solid var(--line); }
+  header.hero h1 {
+    font-size: clamp(30px, 5vw, 46px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    margin: 14px 0 18px;
+    text-wrap: balance;
+  }
+  header.hero h1 .r { color: var(--violet); }
+  header.hero h1 .c { color: var(--coral); }
+  header.hero p.lede {
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 40px;
+  }
+
+  section { padding: 56px 0 8px; }
+  .sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+  .sec-head h2 {
+    font-size: 26px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    margin: 8px 0 6px;
+    text-wrap: balance;
+  }
+  .sec-intro { color: var(--ink-soft); max-width: 68ch; margin: 0 0 30px; }
+
+  /* ---- thesis ---- */
+  .thesis { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .thesis { grid-template-columns: 1fr; } }
+  .pole {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 24px;
+  }
+  .pole h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+  .pole .tag { font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; }
+  .pole.raia { border-top: 3px solid var(--violet); }
+  .pole.raia .tag { color: var(--violet); }
+  .pole.claude { border-top: 3px solid var(--coral); }
+  .pole.claude .tag { color: var(--coral); }
+  .pole ul { margin: 10px 0 0; padding-left: 18px; color: var(--ink-soft); font-size: 14.5px; }
+  .pole li { margin: 5px 0; }
+  .pole li strong { color: var(--ink); font-weight: 600; }
+  .gap {
+    grid-column: 1 / -1;
+    background: var(--green-soft);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    padding: 18px 24px;
+    font-size: 15.5px;
+  }
+  .gap strong { color: var(--green); }
+
+  /* ---- system map ---- */
+  .sysmap { overflow-x: auto; padding-bottom: 6px; }
+  .sysmap-inner { min-width: 860px; display: grid; grid-template-columns: 1fr 236px 1fr; gap: 0; align-items: stretch; }
+  .syscol { display: flex; flex-direction: column; gap: 10px; }
+  .syscol-title {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 4px; text-align: center;
+  }
+  .sysbox {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; font-size: 13.5px;
+  }
+  .sysbox b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .sysbox span { color: var(--ink-soft); font-size: 12.5px; display: block; }
+  .syscol.raia .sysbox { border-left: 3px solid var(--violet); }
+  .syscol.dev .sysbox { border-left: 3px solid var(--coral); }
+  .fabric { display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 0 8px; }
+  .wire {
+    position: relative; text-align: center;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+    padding: 7px 4px; border-radius: 6px;
+    border: 1px dashed var(--line-strong);
+    color: var(--ink);
+    background: var(--paper);
+  }
+  .wire small { display: block; font-family: var(--sans); color: var(--ink-soft); font-size: 11px; letter-spacing: 0; margin-top: 2px; }
+  .wire.pull { border-color: var(--coral); }
+  .wire.push { border-color: var(--green); }
+  .wire.query { border-color: var(--violet); }
+  .wire .dir { font-size: 13px; display: block; margin-bottom: 1px; }
+  .wire.pull .dir { color: var(--coral); }
+  .wire.push .dir { color: var(--green); }
+  .wire.query .dir { color: var(--violet); }
+  .live-chip {
+    display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    background: var(--green-soft); color: var(--green); border: 1px solid var(--green);
+    border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 1px;
+  }
+
+  /* ---- lifecycle swimlane ---- */
+  .lane-legend { display: flex; gap: 22px; flex-wrap: wrap; margin: 0 0 26px; font-size: 13.5px; }
+  .lane-legend .key { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-soft); }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .swatch.v { background: var(--violet); }
+  .swatch.c { background: var(--coral); }
+  .swatch.g { background: var(--green); }
+
+  .dlc { position: relative; }
+  .dlc::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: 50%;
+    width: 2px; background: var(--line-strong); transform: translateX(-50%);
+  }
+  .phase {
+    display: grid; grid-template-columns: 1fr 118px 1fr;
+    gap: 0 0; align-items: start; position: relative;
+    padding: 10px 0 34px;
+  }
+  .node {
+    grid-column: 2; justify-self: center; text-align: center;
+    background: var(--paper); position: relative; z-index: 1;
+    padding: 6px 4px;
+  }
+  .node .num {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--line-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 700; font-size: 15px;
+    margin: 0 auto 8px;
+  }
+  .node .pname { font-weight: 750; font-size: 15px; letter-spacing: -0.01em; }
+  .node .pgoal { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; max-width: 15ch; margin-inline: auto; }
+  .pcard {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; font-size: 13.5px;
+  }
+  .pcard .who {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .pcard.pm { grid-column: 1; margin-right: 26px; border-right: 3px solid var(--violet); }
+  .pcard.pm .who { color: var(--violet); justify-content: flex-end; }
+  .pcard.pm { text-align: right; }
+  .pcard.dev { grid-column: 3; margin-left: 26px; border-left: 3px solid var(--coral); }
+  .pcard.dev .who { color: var(--coral); }
+  .pcard p { margin: 0 0 8px; }
+  .pcard p:last-child { margin-bottom: 0; }
+  .pcard .tool {
+    font-family: var(--mono); font-size: 11.5px;
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+  }
+  .pcard.loopback { border-color: var(--green); }
+  .pcard.loopback .who { color: var(--green); }
+  .phase.knowledge .node .num { border-color: var(--green); color: var(--green); }
+  @media (max-width: 780px) {
+    .dlc::before { left: 22px; }
+    .phase { grid-template-columns: 1fr; padding-left: 52px; }
+    .node { grid-column: 1; justify-self: start; text-align: left; padding: 0 0 8px; }
+    .node .num { margin: 0 0 6px; position: absolute; left: -52px; top: 0; background: var(--card); }
+    .node .pgoal { margin-inline: 0; max-width: none; }
+    .pcard.pm, .pcard.dev { grid-column: 1; margin: 0 0 10px; text-align: left; }
+    .pcard.pm .who { justify-content: flex-start; }
+  }
+
+  /* ---- patterns ---- */
+  .patterns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 780px) { .patterns { grid-template-columns: 1fr; } }
+  .pat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px 22px; font-size: 14px;
+  }
+  .pat .pat-id {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .pat h3 { margin: 6px 0 8px; font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; }
+  .pat p { margin: 0 0 10px; color: var(--ink-soft); }
+  .pat .flow {
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.7;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 7px;
+    padding: 10px 12px; overflow-x: auto; white-space: nowrap;
+  }
+  .pat .flow .a { color: var(--violet); }
+  .pat .flow .b { color: var(--coral); }
+  .pat .flow .k { color: var(--green); }
+
+  /* ---- start here ---- */
+  .moves { display: flex; flex-direction: column; gap: 12px; counter-reset: move; }
+  .move {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 20px; display: grid; grid-template-columns: 40px 1fr auto; gap: 16px; align-items: start;
+  }
+  @media (max-width: 640px) { .move { grid-template-columns: 40px 1fr; } .move .chips { grid-column: 2; } }
+  .move::before {
+    counter-increment: move; content: counter(move);
+    font-family: var(--mono); font-weight: 700; font-size: 18px;
+    color: var(--ink-soft); border: 1.5px solid var(--line-strong); border-radius: 8px;
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  }
+  .move b { font-size: 15px; display: block; margin-bottom: 3px; }
+  .move span.desc { color: var(--ink-soft); font-size: 13.5px; display: block; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .chip {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+    border-radius: 999px; padding: 3px 10px; white-space: nowrap;
+  }
+  .chip.now { background: var(--green-soft); color: var(--green); border: 1px solid var(--green); }
+  .chip.week { background: var(--amber-soft); color: var(--amber); border: 1px solid var(--amber); }
+  .chip.quarter { background: var(--violet-soft); color: var(--violet); border: 1px solid var(--violet); }
+
+  footer.note {
+    margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--line);
+    color: var(--ink-soft); font-size: 12.5px; max-width: 70ch;
+  }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Working session · raia platform strategy · July 2026</div>
+  <h1>Closing the loop: <span class="r">raia agents</span> inside the <span class="c">AI development lifecycle</span></h1>
+  <p class="lede">raia holds the organization's knowledge and talks to everyone. Claude Code holds the repository and ships the code. The AI&nbsp;DLC is what happens when the two are wired together — so product knowledge flows into every coding session, and everything shipped flows back into the agents' training.</p>
+</header>
+
+<section>
+  <div class="eyebrow">01 · The thesis</div>
+  <div class="sec-head"><h2>Two complementary systems, one missing loop</h2></div>
+  <div class="thesis">
+    <div class="pole raia">
+      <div class="tag">Centralized knowledge &amp; conversation</div>
+      <h3>raia</h3>
+      <ul>
+        <li><strong>raia Command</strong> — ingest thousands of documents, chunk, embed, train vector stores; connectors to SharePoint, Drive, and more</li>
+        <li><strong>raia cX + Launch Pad</strong> — build role-specific agents with instructions, skills, guardrails, and the Orchestrator for multi-agent routing</li>
+        <li><strong>raia Copilot</strong> — human-in-the-loop UI: Admin Mode, simulations, takeover, feedback and scoring</li>
+        <li><strong>Access anywhere</strong> — MCP server mode, MCP client mode, REST API, n8n node, browser extension, Teams, chat/SMS/voice</li>
+      </ul>
+    </div>
+    <div class="pole claude">
+      <div class="tag">Repo-native execution</div>
+      <h3>Claude Code</h3>
+      <ul>
+        <li><strong>Reads and writes the actual codebase</strong> — plans, implements, tests, reviews, opens PRs, babysits CI</li>
+        <li><strong>MCP client</strong> — connects to any MCP server, including raia's, per-repo via a committed <code>.mcp.json</code></li>
+        <li><strong>Skills &amp; hooks</strong> — repeatable team workflows (<code>/security-review</code>, custom skills) and lifecycle hooks for automation</li>
+        <li><strong>Runs headless</strong> — GitHub Actions, web sessions, and scheduled routines, not just a terminal</li>
+      </ul>
+    </div>
+    <div class="gap"><strong>The missing loop:</strong> today, what the PM knows lives in raia's vector stores, and what the codebase knows lives in git. Neither system learns from the other automatically. The integration goal is a closed circuit — agents brief the code, and the code retrains the agents.</div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">02 · The system map</div>
+  <div class="sec-head"><h2>How the two sides physically connect</h2></div>
+  <p class="sec-intro">Four wires carry everything. Two of them already work today with zero new engineering — this document was produced in a Claude Code session that has raia's MCP tools live.</p>
+  <div class="sysmap"><div class="sysmap-inner">
+    <div class="syscol raia">
+      <div class="syscol-title">raia platform</div>
+      <div class="sysbox"><b>Knowledge agents</b><span>Product Agent, Codebase Agent, Support Agent — trained in Command on PRDs, docs, tickets, transcripts</span></div>
+      <div class="sysbox"><b>raia Command</b><span>Data Room, AI pipeline, vector stores, connectors, MCP server</span></div>
+      <div class="sysbox"><b>raia Copilot</b><span>PM &amp; operator surface: simulate, supervise, rate, take over</span></div>
+      <div class="sysbox"><b>raia Chat + Control</b><span>Customer signal intake: live chat, escalations, outbound missions</span></div>
+    </div>
+    <div class="fabric">
+      <div class="wire pull"><span class="dir">⟶</span>MCP server mode<span class="live-chip">live now</span><small>Claude Code queries raia agents as tools</small></div>
+      <div class="wire push"><span class="dir">⟵</span>REST API / MCP write tools<span class="live-chip">live now</span><small>CI pushes docs &amp; release notes into vector stores</small></div>
+      <div class="wire query"><span class="dir">⟵</span>MCP client mode<small>raia agents call GitHub / Jira MCP servers</small></div>
+      <div class="wire pull"><span class="dir">⟷</span>Webhooks + n8n<small>events trigger sessions; sessions trigger agents</small></div>
+    </div>
+    <div class="syscol dev">
+      <div class="syscol-title">Dev toolchain</div>
+      <div class="sysbox"><b>Claude Code</b><span>Terminal, web, desktop; plan → build → review → ship</span></div>
+      <div class="sysbox"><b>GitHub</b><span>Repos, issues, PRs, Actions; Claude Code sessions spawn from issues</span></div>
+      <div class="sysbox"><b>CI / CD</b><span>Checks, docs generation, the post-merge knowledge push</span></div>
+      <div class="sysbox"><b>Project tracker</b><span>Jira / Linear — the backlog both sides read and write</span></div>
+    </div>
+  </div></div>
+</section>
+
+<section>
+  <div class="eyebrow">03 · The AI DLC, end to end</div>
+  <div class="sec-head"><h2>One feature's journey through the loop</h2></div>
+  <p class="sec-intro">Each phase pairs a human decision with agent leverage. The PM works the left lane in raia; the developer works the right lane in Claude Code; green marks where knowledge crosses back over.</p>
+  <div class="lane-legend">
+    <span class="key"><span class="swatch v"></span> Product manager · raia surfaces</span>
+    <span class="key"><span class="swatch c"></span> Developer · Claude Code</span>
+    <span class="key"><span class="swatch g"></span> Knowledge crossing the loop</span>
+  </div>
+
+  <div class="dlc">
+
+    <div class="phase">
+      <div class="pcard pm">
+        <div class="who">PM · raia Copilot + Control</div>
+        <p>Reviews conversation insights, feedback scores, and escalations across every channel. Asks the <span class="tool">Support Agent</span> "what are the top 5 unresolved friction points this month?" — it answers from thousands of real transcripts.</p>
+      </div>
+      <div class="node"><div class="num">1</div><div class="pname">Discover</div><div class="pgoal">Signal from real usage</div></div>
+      <div class="pcard dev">
+        <div class="who">Dev · ambient</div>
+        <p>No action yet — but bug-shaped escalations can already auto-file GitHub issues via <span class="tool">n8n</span>, pre-triaged by an agent with reproduction details extracted from the chat.</p>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pcard pm">
+        <div class="who">PM · Product Agent</div>
+        <p>Drafts the PRD in conversation with a <span class="tool">Product Agent</span> trained on past PRDs, strategy docs, and the support corpus. The agent flags overlap with existing features and pulls acceptance-criteria patterns from previous specs.</p>
+        <p>Finished spec lands in the tracker <em>and</em> the agent's vector store.</p>
+      </div>
+      <div class="node"><div class="num">2</div><div class="pname">Define</div><div class="pgoal">Spec with evidence behind it</div></div>
+      <div class="pcard dev">
+        <div class="who">Dev · early read</div>
+        <p>Can interrogate the same <span class="tool">Product Agent</span> from the terminal — "why does this requirement exist?" — and get the customer evidence, not just the ticket text.</p>
+      </div>
+    </div>
+
+    <div class="phase knowledge">
+      <div class="pcard pm">
+        <div class="who">PM · hands off</div>
+        <p>Nothing to re-explain. The spec, its rationale, and the domain context are already queryable by any tool downstream.</p>
+      </div>
+      <div class="node"><div class="num">3</div><div class="pname">Plan</div><div class="pgoal">Agent-briefed technical design</div></div>
+      <div class="pcard dev loopback">
+        <div class="who">Dev · Claude Code plan mode</div>
+        <p>Opens the repo; <span class="tool">.mcp.json</span> connects the session to raia. During planning, Claude Code calls the <span class="tool">Codebase Agent</span> for architecture rationale and the <span class="tool">Product Agent</span> for domain rules — knowledge that lives in no README.</p>
+        <p>Output: an implementation plan citing both code and product truth.</p>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pcard pm">
+        <div class="who">PM · async oversight</div>
+        <p>Asks their agent "what's the status of the checkout feature?" — via MCP client mode the agent reads GitHub PRs and the tracker, and answers in plain language inside Copilot, Teams, or the browser extension.</p>
+      </div>
+      <div class="node"><div class="num">4</div><div class="pname">Build</div><div class="pgoal">Implementation with domain context on tap</div></div>
+      <div class="pcard dev">
+        <div class="who">Dev · Claude Code</div>
+        <p>Implements with raia tools live in-session: <span class="tool">run_prompt</span> to ask a knowledge agent mid-task, <span class="tool">get_prompt_response</span> for API-contract questions, project skills for repeatable jobs.</p>
+        <p>Edge-case question? Ask the Support Agent how customers actually hit this path.</p>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pcard pm">
+        <div class="who">PM · raia Copilot simulations</div>
+        <p>For agent-facing features, runs Copilot <span class="tool">simulations</span> against a staging agent before launch — the product equivalent of a test suite, no code required. Feedback ratings become structured QA data.</p>
+      </div>
+      <div class="node"><div class="num">5</div><div class="pname">Verify</div><div class="pgoal">Both sides test in their own language</div></div>
+      <div class="pcard dev">
+        <div class="who">Dev · Claude Code review</div>
+        <p>Runs <span class="tool">/code-review</span> and <span class="tool">/security-review</span>; a review skill can also check the diff <em>against the spec</em> by querying the Product Agent — "does this match the agreed refund policy behavior?"</p>
+      </div>
+    </div>
+
+    <div class="phase knowledge">
+      <div class="pcard pm loopback">
+        <div class="who">PM · zero-lag enablement</div>
+        <p>The moment the release merges, the Support Agent and Product Agent already know about it. No "update the help center" backlog; support answers reflect the new behavior on day one.</p>
+      </div>
+      <div class="node"><div class="num">6</div><div class="pname">Ship</div><div class="pgoal">Merge = retrain</div></div>
+      <div class="pcard dev loopback">
+        <div class="who">Dev · CI post-merge hook</div>
+        <p>CI generates release notes and updated docs, then calls <span class="tool">add_agent_file_to_vector_store</span> to push them into raia Command. One API call closes the loop — the org's agents are never behind the codebase.</p>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="pcard pm">
+        <div class="who">PM · Copilot analytics</div>
+        <p>Watches how the shipped feature performs in real conversations — feedback scores, escalation rates, Control campaign engagement. Signals that regress become next cycle's Discover input.</p>
+      </div>
+      <div class="node"><div class="num">7</div><div class="pname">Learn</div><div class="pgoal">Usage becomes the next backlog</div></div>
+      <div class="pcard dev">
+        <div class="who">Dev · scheduled routine</div>
+        <p>A weekly headless Claude Code routine queries the Support Agent for new error patterns, cross-references Sentry and the repo, and files pre-investigated issues. The cycle restarts at phase 1 — with better inputs than last time.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">04 · Integration patterns</div>
+  <div class="sec-head"><h2>Five wiring patterns, from live-today to ambitious</h2></div>
+  <div class="patterns">
+    <div class="pat">
+      <div class="pat-id">Pattern A · Knowledge pull <span class="live-chip">works today</span></div>
+      <h3>raia agents as MCP tools inside Claude Code</h3>
+      <p>raia's MCP server mode exposes any agent as a callable tool. Commit an <code>.mcp.json</code> to each repo so every developer's session — terminal or web — starts with the Codebase and Product agents connected. This very session has them live.</p>
+      <div class="flow"><span class="b">Claude Code</span> ──ask──▶ <span class="a">raia MCP server</span> ──RAG──▶ <span class="a">vector store</span> ──answer──▶ <span class="b">session context</span></div>
+    </div>
+    <div class="pat">
+      <div class="pat-id">Pattern B · Knowledge push <span class="live-chip">works today</span></div>
+      <h3>CI retrains agents on every merge</h3>
+      <p>A post-merge job converts changed docs to Markdown (raia's own convert tool helps) and pushes them to the agent's vector store via the REST API. Docs, ADRs, release notes, OpenAPI diffs — all become agent knowledge automatically.</p>
+      <div class="flow"><span class="b">merge → CI</span> ──md──▶ <span class="k">add_agent_file_to_vector_store</span> ──▶ <span class="a">raia Command</span> ──▶ <span class="a">agents updated</span></div>
+    </div>
+    <div class="pat">
+      <div class="pat-id">Pattern C · PM visibility</div>
+      <h3>raia agents read the dev toolchain</h3>
+      <p>raia's MCP client mode connects an agent to GitHub and Jira MCP servers. PMs ask status questions in Copilot, Teams, or the browser extension and get answers grounded in live PRs and tickets — no standup required, no GitHub login required.</p>
+      <div class="flow"><span class="a">PM in Copilot</span> ──ask──▶ <span class="a">agent</span> ──MCP──▶ <span class="b">GitHub / Jira</span> ──▶ plain-language status</div>
+    </div>
+    <div class="pat">
+      <div class="pat-id">Pattern D · Event-driven pipeline</div>
+      <h3>Customer signal to pre-triaged branch</h3>
+      <p>A bug reported in raia Chat triggers an n8n flow: a triage agent extracts reproduction steps and severity, files a GitHub issue, and for well-scoped bugs a headless Claude Code session picks it up and opens a draft PR before a human ever looks.</p>
+      <div class="flow"><span class="a">Live Chat</span> ─▶ <span class="a">triage agent</span> ─▶ n8n ─▶ <span class="b">GitHub issue</span> ─▶ <span class="b">Claude Code session</span> ─▶ draft PR</div>
+    </div>
+    <div class="pat">
+      <div class="pat-id">Pattern E · Spec-aware review</div>
+      <h3>The Product Agent sits in code review</h3>
+      <p>A custom review skill queries the Product Agent with the diff's behavioral changes: does this match the spec, the compliance rules, the promised copy? Combines with raia's Auditor Skill for PII and policy checks on agent-facing changes.</p>
+      <div class="flow"><span class="b">/review skill</span> ──diff summary──▶ <span class="a">Product Agent</span> ──spec check──▶ <span class="b">PR comment</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">05 · Where to start</div>
+  <div class="sec-head"><h2>Sequenced moves, cheapest leverage first</h2></div>
+  <div class="moves">
+    <div class="move">
+      <div>
+        <b>Commit <code>.mcp.json</code> to raia-api, raia-ui, and raia-livechat-v2</b>
+        <span class="desc">Point every repo at the raia MCP server so each Claude Code session opens with the Codebase and Support agents as tools. Add a CLAUDE.md line telling Claude when to consult them.</span>
+      </div>
+      <div class="chips"><span class="chip now">this week</span><span class="chip now">near-zero effort</span></div>
+    </div>
+    <div class="move">
+      <div>
+        <b>Stand up a dedicated Product Knowledge Agent</b>
+        <span class="desc">Train it in Command on PRDs, the docs site export, release notes, and support transcripts. This becomes the shared brain both the PM lane and the dev lane query.</span>
+      </div>
+      <div class="chips"><span class="chip now">this week</span></div>
+    </div>
+    <div class="move">
+      <div>
+        <b>Add the post-merge knowledge push to CI</b>
+        <span class="desc">One GitHub Actions step per repo: changed docs → Markdown → <code>add_agent_file_to_vector_store</code>. From then on, merging is retraining.</span>
+      </div>
+      <div class="chips"><span class="chip week">1–2 weeks</span></div>
+    </div>
+    <div class="move">
+      <div>
+        <b>Give the PM agent eyes on GitHub and the tracker</b>
+        <span class="desc">MCP client mode → GitHub + Jira servers. Pilot with one PM asking status questions through Copilot and the browser extension instead of interrupting the team.</span>
+      </div>
+      <div class="chips"><span class="chip week">1–2 weeks</span></div>
+    </div>
+    <div class="move">
+      <div>
+        <b>Build the chat-to-draft-PR pipeline</b>
+        <span class="desc">n8n flow from Live Chat escalation → triage agent → GitHub issue → headless Claude Code session. Start with a narrow class of bugs (copy fixes, config errors) and widen as trust grows. This is also the flagship AI-DLC story for raia's own customers.</span>
+      </div>
+      <div class="chips"><span class="chip quarter">this quarter</span></div>
+    </div>
+  </div>
+</section>
+
+<footer class="note">
+  Brainstorm artifact drafted from the raia docs-site export (144 pages, July 2026) and the live raia MCP tools available in this Claude Code session. Phase names, wiring, and sequencing are proposals for discussion — the two "works today" patterns were verified by the presence of live <code>raia_API_MCP</code> tools, not by end-to-end testing.
+</footer>
+
+</div>

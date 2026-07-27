@@ -1,0 +1,82 @@
+# Play C1 — "Merge = retrain"
+#
+# Pushes changed Markdown knowledge files to a raia agent's vector store on
+# every merge to main, so the org's agents are never behind the codebase.
+#
+# To adopt:
+#   1. Copy this file to .github/workflows/knowledge-push.yml in your repo.
+#   2. Add repository secrets:
+#        RAIA_AGENT_SECRET_KEY   — the Agent-Secret-Key of the target agent
+#                                  (from Launch Pad → Skills → API Skill).
+#   3. Confirm the upload/removal endpoints against the raia OpenAPI spec:
+#        https://api.raia2.com/api/external/docs/openapi.json
+#      and set RAIA_UPLOAD_URL below. The endpoint shape here is a
+#      placeholder — verify before first run.
+#   4. Adjust the paths filter and routing to match your repo layout
+#      (e.g. route docs/specs/** to the Product Agent with a second job
+#      and a second key).
+#
+# Principle: delete-and-replace superseded files rather than accumulating
+# duplicates, so retrieval never surfaces stale versions.
+
+name: Push knowledge to raia
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**/*.md"
+      - "CHANGELOG.md"
+      - "README.md"
+
+jobs:
+  push-knowledge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (with previous commit for diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed Markdown files
+        id: changed
+        run: |
+          CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD^ HEAD -- \
+            'docs/**/*.md' 'CHANGELOG.md' 'README.md' || true)
+          echo "Changed knowledge files:"
+          echo "$CHANGED"
+          {
+            echo "files<<EOF"
+            echo "$CHANGED"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload changed files to the agent vector store
+        if: steps.changed.outputs.files != ''
+        env:
+          RAIA_AGENT_SECRET_KEY: ${{ secrets.RAIA_AGENT_SECRET_KEY }}
+          # Verify this path against the OpenAPI spec before first run:
+          RAIA_UPLOAD_URL: "https://api.raia2.com/external/agents/files"
+        run: |
+          set -euo pipefail
+          FAILED=0
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            [ -f "$file" ] || continue   # skip deletions; handle removal separately
+            echo "Uploading: $file"
+            HTTP_CODE=$(curl -sS -o /tmp/raia-resp.json -w "%{http_code}" \
+              -X POST "$RAIA_UPLOAD_URL" \
+              -H "Agent-Secret-Key: $RAIA_AGENT_SECRET_KEY" \
+              -F "file=@${file}" \
+              -F "filename=${file}") || HTTP_CODE=000
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+              echo "  OK ($HTTP_CODE)"
+            else
+              echo "  FAILED ($HTTP_CODE): $(cat /tmp/raia-resp.json)"
+              FAILED=1
+            fi
+          done <<< "${{ steps.changed.outputs.files }}"
+          exit $FAILED
+
+      # Optional: notify the team channel that agents were retrained,
+      # or fail loudly into an alerting channel if uploads failed.

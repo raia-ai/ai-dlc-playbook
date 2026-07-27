@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "raia-mcp": {
+      "type": "http",
+      "url": "https://api.raia2.com/mcp",
+      "headers": { "Authorization": "YOUR_RAIA_MCP_KEY" }
+    }
+  },
+  "inputs": []
+}

@@ -1,0 +1,584 @@
+<title>The raia × Claude Code Playbook</title>
+<style>
+  :root {
+    --paper: #FAF9FC;
+    --card: #FFFFFF;
+    --ink: #201A2E;
+    --ink-soft: #5A5170;
+    --line: #E4E0EE;
+    --line-strong: #C9C2DE;
+    --violet: #6D4AEF;
+    --violet-soft: #F1EDFF;
+    --coral: #C96442;
+    --coral-soft: #FBEFE9;
+    --green: #2E8B6A;
+    --green-soft: #E8F4EE;
+    --amber: #B07C1F;
+    --amber-soft: #F9F1DE;
+    --codebg: #211B31;
+    --codeink: #E8E3F5;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #16121F; --card: #1E1929; --ink: #EDE9F5; --ink-soft: #A79DC0;
+      --line: #2E2740; --line-strong: #453B60;
+      --violet: #9D85FF; --violet-soft: #2A2344;
+      --coral: #E08D6A; --coral-soft: #3A2822;
+      --green: #4BB98E; --green-soft: #1E322B;
+      --amber: #D9A84E; --amber-soft: #342C1B;
+      --codebg: #120E1B; --codeink: #D8D2E8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #16121F; --card: #1E1929; --ink: #EDE9F5; --ink-soft: #A79DC0;
+    --line: #2E2740; --line-strong: #453B60;
+    --violet: #9D85FF; --violet-soft: #2A2344;
+    --coral: #E08D6A; --coral-soft: #3A2822;
+    --green: #4BB98E; --green-soft: #1E322B;
+    --amber: #D9A84E; --amber-soft: #342C1B;
+    --codebg: #120E1B; --codeink: #D8D2E8;
+  }
+  :root[data-theme="light"] {
+    --paper: #FAF9FC; --card: #FFFFFF; --ink: #201A2E; --ink-soft: #5A5170;
+    --line: #E4E0EE; --line-strong: #C9C2DE;
+    --violet: #6D4AEF; --violet-soft: #F1EDFF;
+    --coral: #C96442; --coral-soft: #FBEFE9;
+    --green: #2E8B6A; --green-soft: #E8F4EE;
+    --amber: #B07C1F; --amber-soft: #F9F1DE;
+    --codebg: #211B31; --codeink: #E8E3F5;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--sans); line-height: 1.55;
+    margin: 0; padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  header.hero { padding: 60px 0 34px; border-bottom: 1px solid var(--line); }
+  header.hero h1 {
+    font-size: clamp(28px, 4.6vw, 42px); font-weight: 800;
+    letter-spacing: -0.025em; line-height: 1.1; margin: 12px 0 16px; text-wrap: balance;
+  }
+  header.hero h1 em { font-style: normal; color: var(--violet); }
+  header.hero p.lede { font-size: 17px; color: var(--ink-soft); max-width: 64ch; margin: 0; }
+
+  nav.toc {
+    display: flex; flex-wrap: wrap; gap: 8px; padding: 22px 0 0;
+  }
+  nav.toc a {
+    font-family: var(--mono); font-size: 12px; text-decoration: none;
+    color: var(--ink); background: var(--card); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px 13px;
+  }
+  nav.toc a:hover { border-color: var(--violet); color: var(--violet); }
+
+  section { padding: 54px 0 6px; }
+  section h2 {
+    font-size: 25px; font-weight: 750; letter-spacing: -0.02em;
+    margin: 8px 0 8px; text-wrap: balance;
+  }
+  .sec-intro { color: var(--ink-soft); max-width: 66ch; margin: 0 0 26px; }
+
+  .principles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 680px) { .principles { grid-template-columns: 1fr; } }
+  .principle {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; font-size: 14px;
+  }
+  .principle b { display: block; font-size: 14.5px; margin-bottom: 3px; }
+  .principle span { color: var(--ink-soft); }
+
+  /* agent roster table */
+  .roster { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 640px; }
+  th {
+    text-align: left; font-family: var(--mono); font-size: 11px;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft);
+    padding: 8px 14px; border-bottom: 2px solid var(--line-strong);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td b { font-weight: 650; }
+  td .mono, .mono { font-family: var(--mono); font-size: 12px; }
+  tr td:first-child { white-space: nowrap; }
+
+  /* plays */
+  .track-head {
+    display: flex; align-items: center; gap: 12px; margin: 40px 0 14px;
+  }
+  .track-head .track-dot { width: 14px; height: 14px; border-radius: 4px; }
+  .track-head h3 { font-size: 19px; font-weight: 750; letter-spacing: -0.015em; margin: 0; }
+  .track-head .count { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+  .track-build .track-dot { background: var(--coral); }
+  .track-support .track-dot { background: var(--violet); }
+  .track-docs .track-dot { background: var(--green); }
+
+  .play {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 22px 24px; margin-bottom: 16px;
+  }
+  .play-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .play-id {
+    font-family: var(--mono); font-weight: 700; font-size: 13px;
+    border-radius: 6px; padding: 2px 9px;
+  }
+  .play.build .play-id { background: var(--coral-soft); color: var(--coral); }
+  .play.support .play-id { background: var(--violet-soft); color: var(--violet); }
+  .play.docs .play-id { background: var(--green-soft); color: var(--green); }
+  .play h4 { font-size: 17px; font-weight: 720; letter-spacing: -0.01em; margin: 0; }
+  .play .meta {
+    display: flex; gap: 18px; flex-wrap: wrap; margin: 8px 0 12px;
+    font-size: 12.5px; color: var(--ink-soft);
+  }
+  .play .meta b { color: var(--ink); font-weight: 600; }
+  .play p { margin: 0 0 12px; font-size: 14.5px; }
+  .play ol, .play ul { margin: 0 0 12px; padding-left: 22px; font-size: 14px; }
+  .play li { margin: 5px 0; }
+  .play li::marker { font-family: var(--mono); color: var(--ink-soft); font-size: 12px; }
+  .signal {
+    font-size: 13.5px; background: var(--paper); border: 1px dashed var(--line-strong);
+    border-radius: 8px; padding: 10px 14px; color: var(--ink-soft);
+  }
+  .signal b { color: var(--ink); font-weight: 650; }
+
+  pre {
+    background: var(--codebg); color: var(--codeink);
+    border-radius: 9px; padding: 14px 16px; overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.6;
+    margin: 0 0 12px;
+  }
+  pre .cm { color: #8B80AB; }
+  pre .k { color: #B9A6FF; }
+  pre .s { color: #F0B48A; }
+  code {
+    font-family: var(--mono); font-size: 0.9em;
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 4px; padding: 0 4px;
+  }
+  .play code { background: var(--paper); }
+
+  .callout {
+    border-left: 3px solid var(--amber); background: var(--amber-soft);
+    border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 13.5px; margin: 0 0 12px;
+  }
+
+  /* roles grid */
+  .roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  .role {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; font-size: 13.5px;
+  }
+  .role h4 { margin: 0 0 8px; font-size: 15px; }
+  .role ul { margin: 0; padding-left: 17px; color: var(--ink-soft); }
+  .role li { margin: 4px 0; }
+  .role .r-tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+  .role.dev .r-tag { color: var(--coral); }
+  .role.pm .r-tag { color: var(--violet); }
+  .role.sup .r-tag { color: var(--violet); }
+  .role.doc .r-tag { color: var(--green); }
+
+  /* rollout */
+  .rollout { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .rollout { grid-template-columns: 1fr; } }
+  .stage {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px;
+  }
+  .stage .when { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  .stage:nth-child(1) .when { color: var(--green); }
+  .stage:nth-child(2) .when { color: var(--amber); }
+  .stage:nth-child(3) .when { color: var(--violet); }
+  .stage h4 { margin: 4px 0 10px; font-size: 15.5px; }
+  .stage ul { margin: 0; padding-left: 17px; font-size: 13.5px; color: var(--ink-soft); }
+  .stage li { margin: 5px 0; }
+  .stage .plays-ref { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); display: block; margin-top: 10px; }
+
+  /* metrics */
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 680px) { .metrics { grid-template-columns: 1fr; } }
+  .metric {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 15px 18px; font-size: 13.5px;
+  }
+  .metric b { display: block; font-size: 14px; }
+  .metric span { color: var(--ink-soft); }
+
+  footer.note {
+    margin-top: 70px; padding-top: 20px; border-top: 1px solid var(--line);
+    color: var(--ink-soft); font-size: 12.5px; max-width: 72ch;
+  }
+  footer.note a { color: var(--violet); }
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Playbook for development teams building on raia · v1 · July 2026</div>
+  <h1>The <em>raia × AI coding agent</em> playbook</h1>
+  <p class="lede">How any development team can pair raia — as its centralized agentic platform — with an AI coding agent to run the development lifecycle, keep support answers current, and make documentation a byproduct of shipping instead of a chore. Twelve plays across three tracks, plus the one-time foundation that makes them all work.</p>
+  <p class="lede" style="margin-top:14px; font-size:14.5px;">Claude Code is the reference implementation throughout because it spans CLI, IDE, and headless CI use. Every play that touches the coding agent relies only on two standard capabilities — an MCP client and a repo-level instruction file — so Cursor, Windsurf, Copilot, or any equivalent MCP-capable tool can run the same plays with its own config format.</p>
+  <nav class="toc">
+    <a href="#principles">Principles</a>
+    <a href="#foundation">Foundation</a>
+    <a href="#build">Build track</a>
+    <a href="#support">Support track</a>
+    <a href="#docs">Docs track</a>
+    <a href="#roles">Role cards</a>
+    <a href="#governance">Governance</a>
+    <a href="#rollout">Rollout</a>
+  </nav>
+</header>
+
+<section id="principles">
+  <div class="eyebrow">Operating principles</div>
+  <h2>Four rules that make everything else work</h2>
+  <div class="principles">
+    <div class="principle"><b>1 · One brain per domain, not per person.</b><span> Knowledge lives in named raia agents (Codebase, Product, Support/Docs) trained in raia Command — never in someone's head, a stale wiki, or a private chat. Tools and people both query the same agents.</span></div>
+    <div class="principle"><b>2 · Merging is retraining.</b><span> Any merge that changes behavior must update the vector stores in the same pipeline run. If the Support Agent can answer questions about a feature the day it ships, the loop is closed; if not, a play was skipped.</span></div>
+    <div class="principle"><b>3 · Agents brief, humans decide, Claude Code executes.</b><span> raia agents supply context and evidence; PMs and developers make the calls; Claude Code does the mechanical work. Escalation paths (Copilot takeover, PR review) stay human at every step.</span></div>
+    <div class="principle"><b>4 · Write once, near the code.</b><span> Specs, ADRs, and docs live in the repo as Markdown. From there they flow automatically to vector stores and docs sites. Never author knowledge directly in a place that only one system can read.</span></div>
+  </div>
+</section>
+
+<section id="foundation">
+  <div class="eyebrow">Foundation · one-time setup</div>
+  <h2>F1 — Stand up the agent roster</h2>
+  <p class="sec-intro">Three agents cover the whole playbook. Build them in Launch Pad, train them in raia Command, and enable the MCP Skill on each so tools can reach them.</p>
+  <div class="roster">
+    <table>
+      <thead><tr><th>Agent</th><th>Trained on (raia Command)</th><th>Queried by</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Codebase Agent</b><br><span class="mono">per repo or shared</span></td>
+          <td>Architecture docs, ADRs, generated references (the <span class="mono">docs/</span> folders of your repositories), API contract docs, migration guides</td>
+          <td>Coding-agent sessions, IDE chats, new-hire onboarding</td>
+        </tr>
+        <tr>
+          <td><b>Product Agent</b></td>
+          <td>PRDs, strategy docs, acceptance-criteria history, release notes, roadmap, pricing/policy rules</td>
+          <td>PMs drafting specs, coding-agent plan mode, spec-aware review</td>
+        </tr>
+        <tr>
+          <td><b>Support &amp; Docs Agent</b></td>
+          <td>Help-center articles, docs-site export, release notes, resolved-ticket summaries, known-issues list</td>
+          <td>Customers (Live Chat), support staff (Copilot), weekly triage routine</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:13.5px; color:var(--ink-soft); margin-top:10px;">Optional later: front all three with raia's <b>Orchestrator Skill</b> so one endpoint routes questions to the right specialist — callers then need only one key.</p>
+
+  <h2 style="margin-top:44px;">F2 — Connect your coding agent to raia (per repo)</h2>
+  <p class="sec-intro">With Claude Code, commit a <code>.mcp.json</code> at each repo root — every session (terminal, desktop, or web) picks it up automatically; other tools have an equivalent per-project MCP config. Use the key from the agent's <b>MCP Skill</b> (not the Agent-Secret-Key), passed without a <code>Bearer</code> prefix, and keep it in an environment variable rather than the file.</p>
+  <pre><span class="cm">// .mcp.json — committed at each repository root</span>
+{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"raia-codebase"</span>: {
+      <span class="k">"type"</span>: <span class="s">"http"</span>,
+      <span class="k">"url"</span>: <span class="s">"https://api.raia2.com/mcp"</span>,
+      <span class="k">"headers"</span>: { <span class="k">"Authorization"</span>: <span class="s">"${RAIA_MCP_KEY_CODEBASE}"</span> }
+    },
+    <span class="k">"raia-product"</span>: {
+      <span class="k">"type"</span>: <span class="s">"http"</span>,
+      <span class="k">"url"</span>: <span class="s">"https://api.raia2.com/mcp"</span>,
+      <span class="k">"headers"</span>: { <span class="k">"Authorization"</span>: <span class="s">"${RAIA_MCP_KEY_PRODUCT}"</span> }
+    }
+  }
+}</pre>
+  <p class="sec-intro">Then tell the agent <em>when</em> to use the tools — add a short section to each repo's instruction file (<code>CLAUDE.md</code> for Claude Code; <code>AGENTS.md</code>, <code>.cursorrules</code>, or equivalent for other tools):</p>
+  <pre><span class="cm">## raia knowledge agents (MCP)</span>
+- Before planning a feature, query <span class="s">raia-product</span> for the spec,
+  its rationale, and any policy constraints.
+- When code intent is unclear and no doc explains it, ask
+  <span class="s">raia-codebase</span> before guessing from the source alone.
+- Treat agent answers as context, not authority: verify claims
+  about code against the code itself.</pre>
+
+  <h2 style="margin-top:44px;">F3 — Connect the IDE (VS Code / Cursor / Windsurf)</h2>
+  <p class="sec-intro">For engineers who live in the IDE rather than the CLI, add the same server to <code>.vscode/mcp.json</code> (or via <b>MCP: Add Server</b>). Same endpoint, same key rules. Verify with <b>MCP: List Servers → Start</b> until logs show <code>Connection state: Running</code>.</p>
+  <pre><span class="cm">// .vscode/mcp.json</span>
+{
+  <span class="k">"servers"</span>: {
+    <span class="k">"raia-mcp"</span>: {
+      <span class="k">"type"</span>: <span class="s">"http"</span>,
+      <span class="k">"url"</span>: <span class="s">"https://api.raia2.com/mcp"</span>,
+      <span class="k">"headers"</span>: { <span class="k">"Authorization"</span>: <span class="s">"YOUR_RAIA_MCP_KEY"</span> }
+    }
+  }
+}</pre>
+  <div class="callout"><b>Key hygiene:</b> MCP Skill key ≠ Agent-Secret-Key. The MCP key goes in <code>Authorization</code> with no <code>Bearer</code> prefix and no extra spaces. The Agent-Secret-Key is only for the REST API (<code>Agent-Secret-Key</code> header). Both are scoped per agent, so a leak affects one agent only — rotate from Launch Pad.</div>
+
+  <h2 style="margin-top:44px;">F4 — Give PM agents eyes on the dev toolchain</h2>
+  <p class="sec-intro">In raia Command, add MCP <em>integrations</em> (client mode) on the Product Agent pointing at GitHub and Jira MCP servers. Use "Get Available Tools" and expose only read tools (list/search issues, PRs, commits) — status questions need no write access. Now "what shipped this week?" is answerable in Copilot, Teams, or the browser extension.</p>
+</section>
+
+<section id="build">
+  <div class="track-head track-build"><span class="track-dot"></span><h3>Track A · Build — the development lifecycle</h3><span class="count">5 plays</span></div>
+
+  <div class="play build">
+    <div class="play-head"><span class="play-id">A1</span><h4>Evidence-backed specs</h4></div>
+    <div class="meta"><span><b>Who:</b> PM</span><span><b>When:</b> every new feature or change request</span><span><b>Where:</b> raia Copilot / Chat</span></div>
+    <p>Draft the PRD in conversation with the Product Agent instead of a blank page.</p>
+    <ol>
+      <li>Ask the Support &amp; Docs Agent for the customer evidence first: "top friction points related to X, with example conversations."</li>
+      <li>Draft with the Product Agent: it flags overlap with existing features and reuses acceptance-criteria patterns from past PRDs.</li>
+      <li>Commit the finished spec as Markdown in the repo (<code>docs/specs/</code>) — Play C1 will sync it to the vector store automatically.</li>
+    </ol>
+    <div class="signal"><b>Success signal:</b> every spec cites at least one piece of real usage evidence, and a developer can ask "why does this requirement exist?" and get an answer without a meeting.</div>
+  </div>
+
+  <div class="play build">
+    <div class="play-head"><span class="play-id">A2</span><h4>Agent-briefed planning</h4></div>
+    <div class="meta"><span><b>Who:</b> Developer</span><span><b>When:</b> starting any non-trivial task</span><span><b>Where:</b> Claude Code plan mode</span></div>
+    <p>Never plan from the ticket text alone. Open Claude Code in plan mode and let it interrogate both agents before proposing an approach.</p>
+    <ol>
+      <li>Prompt: "Plan the implementation of &lt;ticket&gt;. First query <code>raia-product</code> for the spec and constraints, and <code>raia-codebase</code> for prior art and architecture rationale."</li>
+      <li>Review the plan — it should cite both product truth (policy, acceptance criteria) and code truth (which service, which boundaries).</li>
+      <li>Disagreements between agent answers and actual code are findings: fix the doc or retrain the agent (Play C2).</li>
+    </ol>
+    <div class="signal"><b>Success signal:</b> fewer "built the wrong thing" reworks; plans reference constraints the developer didn't personally know.</div>
+  </div>
+
+  <div class="play build">
+    <div class="play-head"><span class="play-id">A3</span><h4>Domain questions stay in-session</h4></div>
+    <div class="meta"><span><b>Who:</b> Developer</span><span><b>When:</b> continuously while building</span><span><b>Where:</b> Claude Code / IDE chat</span></div>
+    <p>When an edge case, business rule, or "how do customers actually hit this?" question comes up mid-implementation, ask the connected agent instead of interrupting a human or guessing.</p>
+    <ul>
+      <li>Business rule → <code>raia-product</code> ("what's the refund window for annual plans?")</li>
+      <li>Legacy intent → <code>raia-codebase</code> ("why does the message handler dedupe on external_id?")</li>
+      <li>Real-world usage → Support &amp; Docs Agent ("do customers use the SMS channel with attachments?")</li>
+    </ul>
+    <div class="signal"><b>Success signal:</b> measurable drop in Slack interruptions per feature; agent answer quality issues get filed as retraining items rather than ignored.</div>
+  </div>
+
+  <div class="play build">
+    <div class="play-head"><span class="play-id">A4</span><h4>Spec-aware review gate</h4></div>
+    <div class="meta"><span><b>Who:</b> Developer (automated)</span><span><b>When:</b> every PR</span><span><b>Where:</b> Claude Code review + custom skill</span></div>
+    <p>Standard reviews check the code; this play also checks the <em>behavior against the spec</em>. Create a small repeatable workflow — a repo skill in Claude Code (<code>.claude/skills/spec-review</code>), or a saved prompt/command in your tool of choice — that:</p>
+    <ol>
+      <li>Summarizes the diff's user-visible behavior changes.</li>
+      <li>Sends that summary to <code>raia-product</code>: "Does this match the agreed spec and policies? List mismatches."</li>
+      <li>Posts mismatches as PR comments alongside <code>/code-review</code> and <code>/security-review</code> output.</li>
+    </ol>
+    <div class="signal"><b>Success signal:</b> spec deviations caught at PR time, not in UAT; the skill's mismatch comments are actionable more than half the time.</div>
+  </div>
+
+  <div class="play build">
+    <div class="play-head"><span class="play-id">A5</span><h4>Weekly agent-assisted triage</h4></div>
+    <div class="meta"><span><b>Who:</b> Eng lead (automated)</span><span><b>When:</b> weekly, scheduled</span><span><b>Where:</b> headless Claude Code routine</span></div>
+    <p>A scheduled Claude Code session runs every Monday:</p>
+    <ol>
+      <li>Queries the Support &amp; Docs Agent: "new or growing problem patterns this week, with example conversations."</li>
+      <li>Cross-references the repos and recent releases to localize likely causes.</li>
+      <li>Files pre-investigated GitHub issues (suspected component, repro notes, first-seen version) and posts a digest to the team channel.</li>
+    </ol>
+    <div class="signal"><b>Success signal:</b> bugs enter the backlog already triaged; time-to-first-diagnosis drops for support-reported issues.</div>
+  </div>
+</section>
+
+<section id="support">
+  <div class="track-head track-support"><span class="track-dot"></span><h3>Track B · Support — customers and operators</h3><span class="count">4 plays</span></div>
+
+  <div class="play support">
+    <div class="play-head"><span class="play-id">B1</span><h4>Day-one support readiness</h4></div>
+    <div class="meta"><span><b>Who:</b> automated (CI) + Support lead</span><span><b>When:</b> every release</span><span><b>Where:</b> CI → raia Command</span></div>
+    <p>Because Play C1 pushes release notes and changed docs to the Support &amp; Docs Agent's vector store on merge, the agent can answer questions about a feature the day it ships. The support lead's job shifts to verification:</p>
+    <ol>
+      <li>After each release, run 3–5 Copilot <b>simulations</b> asking about the new behavior.</li>
+      <li>Check Admin Mode to confirm the agent retrieved the new release notes, not stale articles.</li>
+      <li>Gaps become docs tickets (Play C3), not tribal-knowledge Slack threads.</li>
+    </ol>
+    <div class="signal"><b>Success signal:</b> zero-lag between "shipped" and "supportable"; escalation rate on new features trends down release over release.</div>
+  </div>
+
+  <div class="play support">
+    <div class="play-head"><span class="play-id">B2</span><h4>Escalation-to-issue pipeline</h4></div>
+    <div class="meta"><span><b>Who:</b> automated + human takeover</span><span><b>When:</b> bug-shaped escalations</span><span><b>Where:</b> Live Chat → n8n → GitHub</span></div>
+    <p>When a Live Chat conversation escalates with a bug signature, an n8n flow has a triage agent extract structured details (steps, environment, severity, verbatim quote) and file a GitHub issue tagged <code>from-support</code>. For a narrow allowlisted class — copy errors, config mistakes — a headless Claude Code session picks the issue up and opens a draft PR for human review.</p>
+    <div class="callout"><b>Guardrail:</b> the draft-PR automation starts with the narrowest possible class and widens only as the merge rate of its PRs proves out. Everything else stops at a well-formed issue.</div>
+    <div class="signal"><b>Success signal:</b> support bugs arrive with repro steps ≥80% of the time; trivial fixes ship within a day of being reported.</div>
+  </div>
+
+  <div class="play support">
+    <div class="play-head"><span class="play-id">B3</span><h4>Feedback as structured QA</h4></div>
+    <div class="meta"><span><b>Who:</b> Support operators</span><span><b>When:</b> continuously</span><span><b>Where:</b> raia Copilot feedback + scoring</span></div>
+    <p>Operators rate agent answers in Copilot as part of normal work. Weekly, the PM reviews the lowest-scored conversation clusters — these are either <b>knowledge gaps</b> (→ docs ticket, Play C3), <b>agent instruction issues</b> (→ Launch Pad edit), or <b>product problems</b> (→ backlog via Play A1). Every low score gets one of those three routes; none are dead ends.</p>
+    <div class="signal"><b>Success signal:</b> feedback scores trend up; each week's low-score cluster produces at least one concrete ticket.</div>
+  </div>
+
+  <div class="play support">
+    <div class="play-head"><span class="play-id">B4</span><h4>Internal answer desk</h4></div>
+    <div class="meta"><span><b>Who:</b> whole company</span><span><b>When:</b> ad hoc</span><span><b>Where:</b> browser extension, Teams, Copilot</span></div>
+    <p>Sales, CS, and leadership get the same agents through low-friction surfaces: the Chrome extension's slide-out drawer (with "read page content" for in-context questions), the Teams integration, or Copilot. One truth, many doors — nobody DMs an engineer for something the Codebase or Product Agent already knows.</p>
+    <div class="signal"><b>Success signal:</b> "quick question" pings to engineering drop; extension/Teams query volume grows instead.</div>
+  </div>
+</section>
+
+<section id="docs">
+  <div class="track-head track-docs"><span class="track-dot"></span><h3>Track C · Documentation — the flywheel</h3><span class="count">3 plays</span></div>
+
+  <div class="play docs">
+    <div class="play-head"><span class="play-id">C1</span><h4>Merge = retrain (the keystone play)</h4></div>
+    <div class="meta"><span><b>Who:</b> automated (CI)</span><span><b>When:</b> every merge to main</span><span><b>Where:</b> GitHub Actions → raia API</span></div>
+    <p>One post-merge job per repo keeps the vector stores current. Because raia's pipeline works best on Markdown, and all three repos already keep docs as Markdown, the job is mostly plumbing:</p>
+    <pre><span class="cm"># .github/workflows/knowledge-push.yml (sketch)</span>
+<span class="k">on:</span> push to main, paths: [<span class="s">"docs/**"</span>, <span class="s">"CHANGELOG.md"</span>]
+<span class="k">steps:</span>
+  - detect changed Markdown files
+  - <span class="cm"># upload each to the agent's vector store via the</span>
+    <span class="cm"># external API (see Swagger: api.raia2.com/api/external/docs)</span>
+    curl -H <span class="s">"Agent-Secret-Key: $RAIA_AGENT_KEY"</span> \
+         -F <span class="s">"file=@docs/changed-file.md"</span> \
+         $RAIA_VECTOR_UPLOAD_ENDPOINT
+  - <span class="cm"># replace superseded versions, don't accumulate duplicates</span></pre>
+    <ul>
+      <li>Route by audience: <code>docs/</code> + ADRs → Codebase Agent; specs + release notes → Product Agent; user-facing docs + changelog → Support &amp; Docs Agent.</li>
+      <li>Delete-and-replace superseded files (the API supports file removal) so retrieval never surfaces stale versions.</li>
+    </ul>
+    <div class="signal"><b>Success signal:</b> ask any agent about a feature merged yesterday — the answer reflects it. Spot-check weekly.</div>
+  </div>
+
+  <div class="play docs">
+    <div class="play-head"><span class="play-id">C2</span><h4>Docs written by the diff</h4></div>
+    <div class="meta"><span><b>Who:</b> Developer + Claude Code</span><span><b>When:</b> any behavior-changing PR</span><span><b>Where:</b> Claude Code, same branch</span></div>
+    <p>Documentation is part of the PR, and Claude Code writes the first draft from the diff — it already knows what changed and why.</p>
+    <ol>
+      <li>Before opening the PR: "Update the affected docs under <code>docs/</code> and draft the changelog entry for this change."</li>
+      <li>If your repos enforce docs discipline (generated references, validation scripts), the agent runs those checks as part of the task — and adding such checks is itself a worthwhile first move.</li>
+      <li>Reviewer reviews docs and code as one unit; merge triggers C1 and the knowledge propagates everywhere.</li>
+    </ol>
+    <div class="signal"><b>Success signal:</b> docs PRs stop existing as a separate (perpetually late) category; docs-freshness complaints from support drop.</div>
+  </div>
+
+  <div class="play docs">
+    <div class="play-head"><span class="play-id">C3</span><h4>Gap-driven docs backlog</h4></div>
+    <div class="meta"><span><b>Who:</b> Docs owner (automated assist)</span><span><b>When:</b> weekly</span><span><b>Where:</b> Copilot insights + Claude Code</span></div>
+    <p>The docs backlog comes from real retrieval failures, not guesses:</p>
+    <ol>
+      <li>Weekly, pull the questions where the Support &amp; Docs Agent scored poorly or retrieved nothing relevant (Copilot Admin Mode shows retrievals and confidence).</li>
+      <li>Feed the list to a Claude Code session: "For each gap, find the authoritative answer in the codebase and draft the missing doc page."</li>
+      <li>Human edits, merges — C1 retrains the agent, closing the exact gap a customer hit. For bulk legacy content, raia's convert (<span class="mono">convert.raia.run</span>) and PDF-splitter tools prepare files for upload.</li>
+    </ol>
+    <div class="signal"><b>Success signal:</b> the same question never fails twice; "no relevant retrieval" rate declines month over month.</div>
+  </div>
+</section>
+
+<section id="roles">
+  <div class="eyebrow">Quick reference</div>
+  <h2>Role cards — what each person actually does</h2>
+  <div class="roles">
+    <div class="role dev">
+      <span class="r-tag">Developer</span>
+      <h4>Build with agents on tap</h4>
+      <ul>
+        <li>Plan via A2, ask via A3</li>
+        <li>Docs in the same PR (C2)</li>
+        <li>Trust but verify agent answers against code</li>
+        <li>File bad agent answers as retraining items</li>
+      </ul>
+    </div>
+    <div class="role pm">
+      <span class="r-tag">Product manager</span>
+      <h4>Own the shared brain</h4>
+      <ul>
+        <li>Specs with evidence (A1)</li>
+        <li>Status via agent, not standup (F4)</li>
+        <li>Weekly feedback review (B3)</li>
+        <li>Owns Product Agent quality</li>
+      </ul>
+    </div>
+    <div class="role sup">
+      <span class="r-tag">Support lead</span>
+      <h4>Verify, escalate, rate</h4>
+      <ul>
+        <li>Post-release simulations (B1)</li>
+        <li>Tend the escalation pipeline (B2)</li>
+        <li>Rate answers as you work (B3)</li>
+        <li>Owns Support Agent quality</li>
+      </ul>
+    </div>
+    <div class="role doc">
+      <span class="r-tag">Docs owner</span>
+      <h4>Curate the flywheel</h4>
+      <ul>
+        <li>Watch the C1 pipeline health</li>
+        <li>Run the weekly gap review (C3)</li>
+        <li>Keep vector stores deduplicated</li>
+        <li>Owns routing rules: which doc → which agent</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="governance">
+  <div class="eyebrow">Governance &amp; safety rails</div>
+  <h2>Non-negotiables</h2>
+  <div class="principles">
+    <div class="principle"><b>Scoped keys, rotated.</b><span> Per-agent keys only (MCP Skill key for MCP, Agent-Secret-Key for REST); store in CI secrets and env vars, never in committed files; rotate from Launch Pad on any suspicion.</span></div>
+    <div class="principle"><b>Read-only by default.</b><span> PM-agent integrations to GitHub/Jira expose read tools only. Write access (filing issues, PRs) belongs to audited automations — n8n flows and headless Claude Code — not to conversational agents.</span></div>
+    <div class="principle"><b>No sensitive payloads in prompts.</b><span> Customer PII stays in raia's governed stores (Auditor Skill on, retention configured). Don't paste conversation transcripts into Claude Code sessions; query the agent for synthesized answers instead.</span></div>
+    <div class="principle"><b>Humans gate every merge.</b><span> Automation may draft PRs; it never merges them. The B2 draft-PR class is allowlisted and reviewed like any other change, and its scope grows only with demonstrated merge-rate.</span></div>
+  </div>
+
+  <h2 style="margin-top:44px;">How you'll know it's working</h2>
+  <div class="metrics">
+    <div class="metric"><b>Time-to-context</b><span> — minutes from "assigned" to "credible plan." Should fall sharply with A2/A3.</span></div>
+    <div class="metric"><b>Knowledge lag</b><span> — time between merge and agents answering correctly about it. Target: same day (C1).</span></div>
+    <div class="metric"><b>Escalation quality</b><span> — % of support-filed bugs with usable repro steps. Target: ≥80% (B2).</span></div>
+    <div class="metric"><b>Retrieval failure rate</b><span> — % of agent queries with no relevant retrieval. Should decline monthly (C3).</span></div>
+    <div class="metric"><b>Interrupt load</b><span> — ad-hoc "quick question" pings to engineers. Should migrate to agent surfaces (B4).</span></div>
+    <div class="metric"><b>Spec-mismatch catch point</b><span> — where deviations surface: PR review (good) vs UAT/production (bad) (A4).</span></div>
+  </div>
+</section>
+
+<section id="rollout">
+  <div class="eyebrow">Sequencing</div>
+  <h2>30 / 60 / 90 rollout</h2>
+  <div class="rollout">
+    <div class="stage">
+      <span class="when">Days 1–30 · Foundation</span>
+      <h4>Wire it up, prove the loop</h4>
+      <ul>
+        <li>Build the three agents; train on existing docs (F1)</li>
+        <li>Commit MCP config + instruction-file guidance to every active repo (F2, F3)</li>
+        <li>Ship the C1 knowledge-push workflow in one repo</li>
+        <li>Developers start A2/A3 habitually</li>
+      </ul>
+      <span class="plays-ref">F1 F2 F3 · C1 · A2 A3</span>
+    </div>
+    <div class="stage">
+      <span class="when">Days 31–60 · Habits</span>
+      <h4>Make the plays routine</h4>
+      <ul>
+        <li>C1 in all repos; C2 becomes PR convention</li>
+        <li>PM specs via A1; agent status via F4</li>
+        <li>Support simulations after each release (B1); feedback loop running (B3)</li>
+        <li>First weekly triage routine (A5) and gap review (C3)</li>
+      </ul>
+      <span class="plays-ref">C2 · A1 F4 · B1 B3 · A5 C3</span>
+    </div>
+    <div class="stage">
+      <span class="when">Days 61–90 · Automation</span>
+      <h4>Close the outer loop</h4>
+      <ul>
+        <li>Spec-aware review skill on PRs (A4)</li>
+        <li>Escalation-to-issue pipeline live; draft-PR class piloted (B2)</li>
+        <li>Company-wide answer desk rollout (B4)</li>
+        <li>Review metrics; decide what to widen or kill</li>
+      </ul>
+      <span class="plays-ref">A4 · B2 · B4 · metrics review</span>
+    </div>
+  </div>
+</section>
+
+<footer class="note">
+  Written for any development team adopting raia as its agentic platform, with Claude Code as the reference coding agent — every play transfers to any MCP-capable equivalent. Companion visual: the <a href="https://claude.ai/code/artifact/e737fd04-9998-42ac-ba07-34d0893f99c9">AI Development Lifecycle map</a>. Endpoints and key rules taken from the raia Developer Hub (MCP: <span class="mono">api.raia2.com/mcp</span>; REST: Swagger at <span class="mono">api.raia2.com/api/external/docs</span>). The C1 workflow is a sketch — confirm the exact vector-store upload endpoint against the OpenAPI spec before implementing. Snippets and play thresholds are starting points; tune them after your first 30 days.
+</footer>
+
+</div>

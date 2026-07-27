@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "raia-codebase": {
+      "type": "http",
+      "url": "https://api.raia2.com/mcp",
+      "headers": { "Authorization": "${RAIA_MCP_KEY_CODEBASE}" }
+    },
+    "raia-product": {
+      "type": "http",
+      "url": "https://api.raia2.com/mcp",
+      "headers": { "Authorization": "${RAIA_MCP_KEY_PRODUCT}" }
+    }
+  }
+}
