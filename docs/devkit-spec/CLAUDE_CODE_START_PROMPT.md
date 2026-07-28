@@ -6,7 +6,15 @@ Copy the prompt below into Claude Code after placing this specification package 
 
 You are the lead engineer implementing the **raia Agent DevKit and Claude Code harness**.
 
-Read these files in full before editing:
+Before reading or editing implementation code, run:
+
+```bash
+node docs/raia-devkit-spec/preflight.mjs
+```
+
+If it exits nonzero, prints `SPEC_PACKAGE_INCOMPLETE`, or `PACKAGE_MANIFEST.sha256` is absent, **stop immediately** and report the missing or changed files. Do not reconstruct, infer, or invent any contract. A standalone copy of this prompt or the build specification is not a complete handoff.
+
+After preflight passes, read these files in full before editing:
 
 1. `docs/raia-devkit-spec/RAIA_AGENT_DEVKIT_BUILD_SPEC.md`
 2. `docs/raia-devkit-spec/AGENT_LIFECYCLE_FRAMEWORK.md`
@@ -45,7 +53,8 @@ Then work test-first where practical. After each coherent change, run the narrow
 - Do not require Bun, Docker, Bash, or a globally installed package.
 - Do not place credentials or realistic secrets in source, snapshots, logs, fixtures, reports, or error messages.
 - Do not implement production deployment, background synchronization, arbitrary MCP tools, telemetry content collection, or a second coding-agent adapter.
-- Do not invent live raia management endpoints. The OpenAPI file is a proposed contract and later HTTP work must remain behind `ManagementProvider`.
+- Do not invent live raia management endpoints. The management OpenAPI file is a proposed contract and later HTTP work must remain behind `ManagementProvider`.
+- Do not infer conversation routes or authentication from prose. WP6 must use the pinned `external-openapi-v1` contract, and the conflicting `developer-v1` profile remains disabled until an authoritative OpenAPI document is supplied.
 - Do not claim completion while a required test is skipped or failing.
 - Do not proceed to WP2 until every WP0/WP1 gate passes and you have summarized the evidence for review.
 
@@ -61,6 +70,6 @@ When WP0 and WP1 are complete, report:
 6. remaining ambiguities or risks;
 7. a proposed, bounded WP2 plan—without starting it.
 
-Begin by reading the specification package and writing `IMPLEMENTATION_PLAN.md`. Do not edit implementation code before the plan is complete.
+Begin by running the package preflight. Only after it passes, read the complete specification package and write `IMPLEMENTATION_PLAN.md`. Do not edit implementation code before the plan is complete.
 
 ---

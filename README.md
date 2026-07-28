@@ -289,7 +289,7 @@ The two layers close the same loop at different levels:
 | Review gate | Spec-aware PR review (A4) | Semantic diff + evaluation gates + release policy |
 | Deploy safety | Humans gate every merge | Immutable candidates, staging-only from Claude |
 
-**Status:** specification stage. The build spec references a fuller package (`contracts/`, `AGENT_LIFECYCLE_FRAMEWORK.md`, `examples/helpdesk-agent/`, `DECISIONS_REQUIRED.md`) that must accompany it before the kickoff prompt in [`docs/devkit-spec/CLAUDE_CODE_KICKOFF_PROMPT.md`](docs/devkit-spec/CLAUDE_CODE_KICKOFF_PROMPT.md) can be executed.
+**Status:** complete, validated specification package (36 files — normative schemas and contracts, the vendored raia external OpenAPI, the `helpdesk-agent` reference example, lifecycle framework, decision log, and acceptance checklist). Package integrity is pinned in `PACKAGE_MANIFEST.sha256`, and its own validators pass (`validate_package.py`, `preflight.mjs`). Implementation starts by placing this package at `docs/raia-devkit-spec/` in a dedicated repository and running [`docs/devkit-spec/CLAUDE_CODE_START_PROMPT.md`](docs/devkit-spec/CLAUDE_CODE_START_PROMPT.md) (WP0 + WP1 first).
 
 ---
 

@@ -56,6 +56,7 @@ The primary user is an application or AI engineer responsible for a customer-fac
 The MVP is successful when a developer can complete the golden path below from a fresh checkout, without access to a live management API:
 
 ```text
+node docs/raia-devkit-spec/preflight.mjs
 pnpm install
 pnpm build
 pnpm test
@@ -83,7 +84,7 @@ pnpm --filter @raia/cli exec raia status
 
 ### 6.1 Included in the MVP
 
-The implementation MUST include the monorepo, JSON Schemas, generated types, manifest loader, bundle hashing, semantic diff engine, validation and policy engine, mock management provider, existing conversation API client, proposed management HTTP provider, fixture/live evaluation engine, CLI, local stdio MCP server, Claude Code plugin, example agent, test suites, CI, release packaging, and contributor documentation.
+The implementation MUST include the monorepo, JSON Schemas, generated types, manifest loader, bundle hashing, semantic diff engine, validation and policy engine, mock management provider, contract-selected conversation runtime client, proposed management HTTP provider, fixture/live evaluation engine, CLI, local stdio MCP server, Claude Code plugin, example agent, test suites, CI, release packaging, and contributor documentation.
 
 The HTTP management provider may remain integration-tested against a mock server until the backend implements the proposed OpenAPI contract. It MUST nevertheless include authentication injection, retries, timeouts, pagination, typed errors, request IDs, idempotency headers, and ETag handling.
 
@@ -309,11 +310,19 @@ Use the exact boundary in `contracts/provider-contract.ts`. Inject providers, cr
 | Provider | Purpose |
 | --- | --- |
 | `ManagementProvider` | Discovery, export, planning, drafts, remote evaluations, releases, deployments, and traces |
-| `ConversationProvider` | Current conversation and message operations using an agent-scoped secret |
+| `ConversationProvider` | Contract-selected conversation and message operations using an agent-scoped credential |
 | `MockManagementProvider` | Deterministic filesystem implementation for all lifecycle operations |
-| `HttpManagementProvider` | Client for the proposed `/api/management/v1` contract |
+| `HttpManagementProvider` | Client for the proposed `/agent-devkit/v1` management contract |
 
-The current documented API uses `https://api.raia2.com` for US and `https://api-eu.raia2.com` for EU, with conversation operations under `/api/v1`.[1] Keep those endpoints in `conversation-client`; do not infer lifecycle privileges from an Agent Secret Key.
+Current raia documentation exposes two conflicting conversation-runtime shapes. The REST API reference describes `/api/v1/conversations` and `/api/v1/conversation-messages` with `Authorization: Bearer`, while the linked US/EU Swagger and workflow documentation publish `/external/conversations...` with an `Agent-Secret-Key` security scheme.[1] [5] [6] The DevKit MUST therefore use an explicit, named runtime contract rather than infer a prefix or authentication header.
+
+| Runtime profile | MVP treatment |
+| --- | --- |
+| `external-openapi-v1` | Preserve the published external OpenAPI byte-for-byte, generate from the audited normalized copy under `contracts/vendor/`, and use US server `https://api.raia2.com`, EU server `https://api-eu.raia2.com`, and `/external/...` routes |
+| `developer-v1` | Capability-disabled until raia supplies a matching authoritative OpenAPI document for the `/api/v1/...` interface; prose examples alone are not a generated-client contract |
+| `custom-openapi` | Optional explicit local OpenAPI file; never accepts an arbitrary remote URL during normal execution |
+
+`raia doctor` MUST report the selected profile, contract checksum, server identifier, and authentication scheme without revealing credentials. If the configured runtime profile has no pinned valid contract, live evaluation stops with `CAPABILITY_UNAVAILABLE`; it never guesses. No conversation credential or runtime route can authorize lifecycle management.
 
 ## 17. Mock provider
 
@@ -528,7 +537,7 @@ Work in vertical slices. Do not generate every package shell before proving one 
 | **WP3 — Evaluation vertical slice** | Fixture runner, deterministic evaluators, JSON/JUnit/Markdown reports, regression comparison, `test`, `review` | Passing example succeeds; regressed fixture exits `6`; reports are byte-stable aside from excluded fields |
 | **WP4 — Release and staging** | Lifecycle engine, policies, immutable releases, mock staging deployment, conflicts, idempotency, `release create`, `deploy staging` | Identical retry returns same IDs; changed retry fails; stale base exits `5`; staging reaches `HEALTHY` |
 | **WP5 — MCP and Claude adapter** | Stdio MCP, allowlisted tools, plugin manifest, Skills, agents, hooks, bundled server | MCP reproduces golden path; plugin validates strictly; no production tool appears anywhere |
-| **WP6 — HTTP and conversation providers** | OpenAPI-aligned management client, documented conversation client, OAuth/PAT abstraction, retries and typed errors | Contract tests pass against mock HTTP server; agent secret cannot construct management provider |
+| **WP6 — HTTP and conversation providers** | OpenAPI-aligned management client, pinned-contract conversation client, OAuth/PAT abstraction, retries and typed errors | Contract tests pass against mock HTTP servers; runtime-profile drift fails closed; agent secret cannot construct management provider |
 | **WP7 — Hardening and distribution** | Cross-platform matrix, packaging, provenance/checksums, docs, examples, migration/versioning guide | Clean artifact install passes on all target operating systems |
 
 At the end of every work package, update `IMPLEMENTATION_STATUS.md` with completed acceptance criteria, test commands, known limitations, and the next smallest vertical slice.
@@ -577,7 +586,7 @@ These are not blockers. Claude Code should use interfaces, dependency injection,
 
 ## 32. Instructions to the implementing Claude Code session
 
-Read this specification and every file under `contracts/` before editing. Create `IMPLEMENTATION_PLAN.md` that maps each work package to repository changes and tests. Then implement **WP0 and WP1 only** before expanding. Demonstrate the example validation, candidate hashing, semantic diff, and negative secret/path tests. Fix all failures before proceeding to WP2.
+Run `node docs/raia-devkit-spec/preflight.mjs` before reading or editing implementation code. If it fails, stop rather than reconstructing missing contracts. After it passes, read this specification and every file under `contracts/` before editing. Create `IMPLEMENTATION_PLAN.md` that maps each work package to repository changes and tests. Then implement **WP0 and WP1 only** before expanding. Demonstrate the example validation, candidate hashing, semantic diff, and negative secret/path tests. Fix all failures before proceeding to WP2.
 
 For every subsequent work package, follow this loop:
 
@@ -596,3 +605,5 @@ Do not weaken a security invariant to make a test pass. Do not add production de
 [2]: https://code.claude.com/docs/en/features-overview "Anthropic — Extend Claude Code"
 [3]: https://code.claude.com/docs/en/plugins-reference "Anthropic — Claude Code Plugins Reference"
 [4]: https://github.com/awslabs/aidlc-workflows "AWS Labs — AI-DLC Workflows"
+[5]: https://docs.raiaai.com/integrations/workflow-integration/api-documentation "raia — Workflow API Documentation"
+[6]: https://api.raia2.com/api/external/docs/openapi.json "raia — Published External API OpenAPI Document"
