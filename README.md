@@ -1,24 +1,60 @@
 # The raia × AI Coding Agent Playbook
 
-**How any development team can pair [raia](https://raiaai.com) — as its centralized agentic platform — with an AI coding agent to run the development lifecycle, keep support answers current, and make documentation a byproduct of shipping instead of a chore.**
+**Use [raia](https://raiaai.com) agents and an AI coding agent as one evidence-to-delivery system: shared agents brief the work, humans make the decisions, code and documentation ship together, and every merge refreshes organizational knowledge.**
 
-Twelve plays across three tracks, plus the one-time foundation that makes them all work.
+> **In one sentence:** this repository explains how a product team uses raia agents while building software; the separate [raia Agent DevKit](https://github.com/raia-ai/raia-agent-devkit) is the toolchain for building the agents themselves.
 
-> **Tooling note:** [Claude Code](https://claude.com/claude-code) is the reference implementation throughout because it spans CLI, IDE, and headless CI use. Every play that touches the coding agent relies on only two standard capabilities — an **MCP client** and a **repo-level instruction file** — so Cursor, Windsurf, Copilot, or any equivalent MCP-capable tool can run the same plays with its own config format.
+The playbook is an adoption system, not just a list of ideas. It combines a minimum operating loop, 12 advanced plays across development, support, and documentation, role guidance, governance controls, measurement, and reusable templates.
 
-**Contents of this repo**
+| This playbook is | This playbook is not |
+|---|---|
+| A cross-functional operating model for product, engineering, support, documentation, and platform teams | An autonomous software-development system or a replacement for human review |
+| A set of repeatable practices that connect raia knowledge to repositories and delivery workflows | The runtime, management API, or implementation of the raia platform |
+| Harness-neutral guidance that uses Claude Code as the reference coding agent | A Claude-only framework; any MCP-capable coding tool can implement the same loop |
+| A path from a small pilot to a measured, governed rollout | A promise that every illustrative automation is safe to enable without local review |
+
+## Choose your starting point
+
+| If you are… | Start with… |
+|---|---|
+| Evaluating the approach | [The thesis](#the-thesis), [the minimum operating loop](#the-minimum-operating-loop), and [how you will know it is working](#how-youll-know-its-working) |
+| Running a pilot | [Foundation](#foundation-one-time-setup), then adopt A2, A4, C1, and B1 in one repository |
+| A developer | A2 agent-briefed planning, A3 in-session questions, A4 spec-aware review, and C2 docs from the diff |
+| A product, support, or docs owner | [Role cards](#role-cards--what-each-person-actually-does) and the matching track |
+| Building or releasing a raia agent | [AI-DLC Playbook and Agent DevKit](docs/agent-devkit-boundary.md), then use the [dedicated DevKit repository](https://github.com/raia-ai/raia-agent-devkit) |
+
+> **Tooling note:** [Claude Code](https://claude.com/claude-code) is the reference implementation because it spans CLI, IDE, and headless CI use. Every play that touches a coding agent relies on two portable capabilities: an **MCP client** and a **repository-level instruction file**. Cursor, Windsurf, Copilot, or an equivalent MCP-capable tool can implement the same practices with its own configuration format.
+
+## Contents of this repository
 
 | Path | What it is |
 |---|---|
-| `README.md` | The playbook (canonical source — this file) |
-| `docs/lifecycle-map.html` | Visual: the AI DLC loop, PM and developer swimlanes |
-| `docs/playbook.html` | Styled, shareable rendering of this playbook |
-| `templates/` | Drop-in configs: `.mcp.json`, IDE variant, instruction-file snippets |
-| `workflows/knowledge-push.yml` | The C1 "merge = retrain" CI job, ready to adapt |
+| `README.md` | The canonical playbook and operating model |
+| `docs/agent-devkit-boundary.md` | The exact boundary between using agents in software delivery and building the agents themselves |
+| `docs/quick-starts.md` | First-session actions and stop conditions for each role |
+| `docs/maturity-model.md` | Observable adoption levels and evidence required to advance |
+| `docs/measurement.md` | Outcome definitions, failure taxonomy, and decision rules |
+| `docs/governance.md` | Permissions, data boundaries, automation levels, and recovery controls |
+| `docs/lifecycle-map.html` | Archived visual map of the original AI-DLC loop; use this README for current controls |
+| `docs/playbook.html` | Archived styled rendering of the original playbook; use this README for current guidance |
+| `templates/` | Drop-in MCP, repository-instruction, pilot-brief, and scorecard templates |
+| `examples/golden-path/` | A credential-free, executable Ground → Verify reference with deterministic evidence |
+| `workflows/knowledge-refresh.yml` | A fail-closed, plan-first reference for the C1 knowledge-refresh workflow |
 | `skills/spec-review/` | The A4 spec-aware review skill for Claude Code |
-| `docs/presentation-guide.md` | Slide-by-slide source material for presenting this playbook |
-| `docs/raia-ai-dlc-presentation.pptx` | The 16-slide deck with speaker notes |
-| `docs/devkit-spec/` | **Layer 2:** build spec for the raia Agent DevKit — the DLC applied to raia agents themselves (see below) |
+| `docs/presentation-guide.md` | Slide-by-slide source material for presenting the playbook |
+| `docs/raia-ai-dlc-presentation.pptx` | Pre-v0.2 presentation snapshot; regenerate from the updated guide before external use |
+
+> **Rendered-artifact note:** the HTML and presentation files are communication aids. `README.md` and the linked Markdown guides are the maintained sources of truth.
+
+### Validate the playbook
+
+Run the dependency-free repository validator before opening a pull request:
+
+```bash
+node scripts/validate-playbook.mjs
+```
+
+It checks required artifacts, internal links, JSON and JavaScript syntax, credential patterns, the single-source DevKit boundary, the complete golden path, and the fail-closed knowledge-refresh planner.
 
 ---
 
@@ -33,12 +69,40 @@ Left unconnected, neither system learns from the other. The integration goal is 
 
 ---
 
+## The minimum operating loop
+
+Start with one repository, one product area, and one small group. Do not begin with scheduled issue filing or autonomous pull requests. Prove this loop first:
+
+| Step | Human responsibility | Agent or automation responsibility | Evidence produced |
+|---|---|---|---|
+| **1. Ground** | A product owner chooses the problem and verifies the customer evidence | The Support & Docs Agent retrieves recurring questions, friction, and representative examples | A short evidence note linked from the specification |
+| **2. Specify** | The product owner decides scope and acceptance criteria | The Product Agent identifies related policies, prior decisions, and open ambiguity | A versioned Markdown specification in the repository |
+| **3. Plan** | A developer selects the approach and resolves conflicts | The coding agent queries Product and Codebase Agents before proposing a plan | A reviewed plan citing product and code constraints |
+| **4. Build** | The developer owns the implementation and test strategy | The coding agent makes mechanical changes and keeps documentation in the branch | Code, tests, and documentation in one change set |
+| **5. Review** | A human approves or rejects the pull request | The spec-review gate reports confirmed mismatches and uncovered specification gaps | Review evidence attached to the pull request |
+| **6. Refresh** | The documentation or platform owner approves the destination and live-apply gate | Post-merge automation produces an immutable refresh plan; an approved adapter applies it without deleting the last known-good source first | A plan and, when live apply is enabled, a sync receipt tied to the merge commit |
+| **7. Verify** | The product or support owner decides whether the answer is acceptable | A repeatable smoke check asks about the newly shipped behavior and records retrieval evidence | A pass/fail freshness result and, when needed, a retraining issue |
+
+The pilot is successful only when a real change completes all seven steps. Once that happens consistently, add the broader support, triage, and automation plays.
+
+Before connecting a live system, run the [credential-free golden path](examples/golden-path/README.md):
+
+```bash
+cd examples/golden-path
+npm test
+npm run dry-run
+```
+
+It exercises the complete evidence chain and writes only a local sync preview by default.
+
+---
+
 ## Operating principles
 
 1. **One brain per domain, not per person.** Knowledge lives in named raia agents (Codebase, Product, Support/Docs) trained in raia Command — never in someone's head, a stale wiki, or a private chat. Tools and people both query the same agents.
-2. **Merging is retraining.** Any merge that changes behavior must update the vector stores in the same pipeline run. If the Support Agent can answer questions about a feature the day it ships, the loop is closed; if not, a play was skipped.
+2. **Merging triggers retraining.** Any merge that changes behavior must produce an immutable knowledge-refresh plan. After the write path is contract-tested and explicitly approved, a protected adapter applies that plan, retains a receipt, and verifies freshness. A successful merge alone never proves that the agent learned the change.
 3. **Agents brief, humans decide, the coding agent executes.** raia agents supply context and evidence; PMs and developers make the calls; the coding agent does the mechanical work. Escalation paths (Copilot takeover, PR review) stay human at every step.
-4. **Write once, near the code.** Specs, ADRs, and docs live in the repo as Markdown. From there they flow automatically to vector stores and docs sites. Never author knowledge directly in a place only one system can read.
+4. **Write once, near the code.** Specs, ADRs, and docs live in the repo as Markdown. From there, reviewed pipelines can route approved sources to vector stores and documentation sites. Never author knowledge directly in a place only one system can read.
 
 ---
 
@@ -86,7 +150,7 @@ Draft the PRD in conversation with the Product Agent instead of a blank page.
 
 1. Ask the Support & Docs Agent for the customer evidence first: "top friction points related to X, with example conversations."
 2. Draft with the Product Agent: it flags overlap with existing features and reuses acceptance-criteria patterns from past PRDs.
-3. Commit the finished spec as Markdown in the repo (`docs/specs/`) — Play C1 syncs it to the vector store automatically.
+3. Commit the finished spec as Markdown in the repo (`docs/specs/`) — Play C1 includes it in the governed knowledge-refresh plan after merge.
 
 > **Success signal:** every spec cites at least one piece of real usage evidence, and a developer can ask "why does this requirement exist?" and get an answer without a meeting.
 
@@ -144,9 +208,9 @@ A scheduled session runs every Monday:
 
 ### B1 — Day-one support readiness
 
-**Who:** automated (CI) + Support lead · **When:** every release · **Where:** CI → raia Command
+**Who:** CI planner + Documentation or Platform owner + Support lead · **When:** every release · **Where:** CI → protected adapter → raia Command
 
-Because Play C1 pushes release notes and changed docs to the Support & Docs Agent's vector store on merge, the agent can answer questions about a feature the day it ships. The support lead's job shifts to verification:
+Play C1 creates a reviewable refresh plan for release notes and changed docs. Once an approved live adapter applies that plan and retains a receipt, the support lead verifies that the Support & Docs Agent actually learned the change:
 
 1. After each release, run 3–5 Copilot **simulations** asking about the new behavior.
 2. Check Admin Mode to confirm the agent retrieved the new release notes, not stale articles.
@@ -184,16 +248,16 @@ Sales, CS, and leadership get the same agents through low-friction surfaces: the
 
 ## Track C · Documentation — the flywheel
 
-### C1 — Merge = retrain (the keystone play)
+### C1 — Merge triggers a governed knowledge refresh (the keystone play)
 
-**Who:** automated (CI) · **When:** every merge to main · **Where:** GitHub Actions → raia API
+**Who:** CI planner + approved write-path owner · **When:** every merge to main · **Where:** GitHub Actions → protected adapter → raia API
 
-One post-merge job per repo keeps the vector stores current. Because raia's pipeline works best on Markdown, keep docs as Markdown and the job is mostly plumbing. See [`workflows/knowledge-push.yml`](workflows/knowledge-push.yml).
+The public reference, [`workflows/knowledge-refresh.yml`](workflows/knowledge-refresh.yml), inspects changed approved sources and emits an immutable plan artifact. It deliberately performs no remote write and requires no raia credential. A team enables live apply only after pinning its regional OpenAPI contract, approving destination routing, protecting the write environment, and proving recovery and freshness checks.
 
-- **Route by audience:** `docs/` + ADRs → Codebase Agent; specs + release notes → Product Agent; user-facing docs + changelog → Support & Docs Agent.
-- **Delete-and-replace** superseded files (the API supports file removal) so retrieval never surfaces stale versions.
+- **Route by audience:** `docs/` + ADRs → Codebase Agent; specs + release notes → Product Agent; user-facing docs + changelog → Support & Docs Agent. Routing is an explicit policy, never inferred from a secret or raw agent ID.
+- **Replace safely:** upload and verify the new source before removing the superseded source. Retain the previous file identity and a receipt so failed indexing cannot leave the agent with no approved copy.
 
-> **Success signal:** ask any agent about a feature merged yesterday — the answer reflects it. Spot-check weekly.
+> **Success signal:** the refresh plan is traceable to the merge, the live receipt matches the approved destination, and representative questions retrieve the new source. A successful upload without retrieval verification is not a pass.
 
 ### C2 — Docs written by the diff
 
@@ -203,7 +267,7 @@ Documentation is part of the PR, and the coding agent writes the first draft fro
 
 1. Before opening the PR: "Update the affected docs under `docs/` and draft the changelog entry for this change."
 2. If your repos enforce docs discipline (generated references, validation scripts), the agent runs those checks as part of the task — and adding such checks is itself a worthwhile first move.
-3. Reviewer reviews docs and code as one unit; merge triggers C1 and the knowledge propagates everywhere.
+3. The reviewer evaluates docs and code as one unit; merge triggers C1’s plan-first refresh and the approved write path propagates the change.
 
 > **Success signal:** docs PRs stop existing as a separate (perpetually late) category; docs-freshness complaints from support drop.
 
@@ -215,7 +279,7 @@ The docs backlog comes from real retrieval failures, not guesses:
 
 1. Weekly, pull the questions where the Support & Docs Agent scored poorly or retrieved nothing relevant (Copilot Admin Mode shows retrievals and confidence).
 2. Feed the list to a coding-agent session: "For each gap, find the authoritative answer in the codebase and draft the missing doc page."
-3. Human edits, merges — C1 retrains the agent, closing the exact gap a customer hit. For bulk legacy content, raia's [convert](https://convert.raia.run) and [PDF-splitter](https://pdf.raia.run) tools prepare files for upload.
+3. A human edits and merges the correction; C1 plans the refresh, the approved adapter applies it, and the owner verifies the original failed question. For bulk legacy content, raia's [convert](https://convert.raia.run) and [PDF-splitter](https://pdf.raia.run) tools prepare files for review and upload.
 
 > **Success signal:** the same question never fails twice; "no relevant retrieval" rate declines month over month.
 
@@ -223,74 +287,86 @@ The docs backlog comes from real retrieval failures, not guesses:
 
 ## Role cards — what each person actually does
 
+Use the [role-based quick starts](docs/quick-starts.md) for first-session actions, required evidence, and stop conditions.
+
 | Role | Focus | Plays |
 |---|---|---|
-| **Developer** | Build with agents on tap; plan via A2, ask via A3; docs in the same PR (C2); trust but verify agent answers against code; file bad answers as retraining items | A2 A3 A4 C2 |
-| **Product manager** | Own the shared brain; specs with evidence (A1); status via agent, not standup (F4); weekly feedback review (B3); owns Product Agent quality | A1 F4 B3 |
-| **Support lead** | Verify, escalate, rate; post-release simulations (B1); tend the escalation pipeline (B2); rate answers while working (B3); owns Support Agent quality | B1 B2 B3 |
-| **Docs owner** | Curate the flywheel; watch C1 pipeline health; run the weekly gap review (C3); keep vector stores deduplicated; owns routing rules (which doc → which agent) | C1 C3 |
+| **Developer** | Plan with grounded agent context, verify against current code, keep tests and documentation in the same branch, and report stale answers | A2 A3 A4 C2 |
+| **Product manager** | Own product truth, decide scope and ambiguity, support specifications with evidence, and review agent quality | A1 F4 B3 |
+| **Support lead** | Verify customer-facing behavior, classify failures, preserve escalation quality, and close the loop against the original case | B1 B2 B3 |
+| **Documentation owner** | Own source quality and routing, approve knowledge refresh, remove superseded sources, and verify retrieval | C1 C3 |
+| **Platform owner** | Scope credentials, protect write paths, preserve traceability, and test disablement, rotation, and recovery | F2 C1 B2 |
 
 ---
 
 ## Governance & safety rails
 
-- **Scoped keys, rotated.** Per-agent keys only (MCP Skill key for MCP, Agent-Secret-Key for REST); store in CI secrets and env vars, never in committed files; rotate from Launch Pad on any suspicion.
-- **Read-only by default.** PM-agent integrations to GitHub/Jira expose read tools only. Write access (filing issues, PRs) belongs to audited automations — n8n flows and headless coding-agent sessions — not to conversational agents.
-- **No sensitive payloads in prompts.** Customer PII stays in raia's governed stores (Auditor Skill on, retention configured). Don't paste conversation transcripts into coding-agent sessions; query the agent for synthesized answers instead.
-- **Humans gate every merge.** Automation may draft PRs; it never merges them. The B2 draft-PR class is allowlisted and reviewed like any other change, and its scope grows only with demonstrated merge rate.
+The full [governance, security, and recovery guide](docs/governance.md) defines the authority matrix, credential separation, sensitive-data boundary, automation levels, write-path review, and incident procedure.
+
+| Non-negotiable | Operational rule |
+|---|---|
+| **Read before write** | Prove the workflow in read-only or dry-run mode before granting mutation permission |
+| **Scoped credentials** | Separate MCP reads, conversation tests, knowledge writes, repository writes, and future agent-management access |
+| **No raw sensitive payloads in coding context** | Keep customer data in approved systems and use redacted patterns, synthetic fixtures, or governed synthesis |
+| **Humans gate impact** | People approve merges, product decisions, customer commitments, knowledge-write enablement, and production actions |
+| **Fail closed and recover** | Ambiguous routing, stale state, missing review, or failed verification stops the workflow; disablement and credential rotation are tested |
 
 ## How you'll know it's working
 
-| Metric | Definition | Direction |
+Use the [measurement framework](docs/measurement.md) and copy the [pilot scorecard](templates/pilot-scorecard.md). Capture a baseline before setting a target; the same metric name is not comparable when teams use different definitions or samples.
+
+| Outcome | Core measure | Desired direction |
 |---|---|---|
-| Time-to-context | Minutes from "assigned" to "credible plan" | Falls sharply with A2/A3 |
-| Knowledge lag | Time between merge and agents answering correctly about it | Target: same day (C1) |
-| Escalation quality | % of support-filed bugs with usable repro steps | Target: ≥80% (B2) |
-| Retrieval failure rate | % of agent queries with no relevant retrieval | Declines monthly (C3) |
-| Interrupt load | Ad-hoc "quick question" pings to engineers | Migrates to agent surfaces (B4) |
-| Spec-mismatch catch point | Where deviations surface | PR review (good) vs UAT/production (bad) (A4) |
+| Developers reach a supported implementation approach sooner | Time to credible plan and evidence-supported plan rate | Time down; support rate up |
+| Product ambiguity surfaces before customer impact | Specification-gap catch point | Moves toward planning and pull-request review |
+| Documentation ships with behavior | Documentation co-ship rate | Up |
+| Agents learn current approved sources promptly | Knowledge lag and freshness pass rate | Lag down; pass rate up |
+| Poor answers become closed corrective work | Unsupported-answer rate and correction closure rate | Unsupported rate down; closure rate up |
+| Support escalations become more actionable | Escalation completeness | Up |
+
+---
+
+## Maturity and rollout gates
+
+The [AI-DLC maturity model](docs/maturity-model.md) distinguishes five operating states: ad hoc, connected, repeatable, measured, and closed loop. A team advances only when every control for the current level is consistently evidenced. API access or a larger automation surface does not constitute maturity.
+
+| Current state | Required next proof |
+|---|---|
+| Ad hoc | Named owners, approved sources, scoped repository connection, and a failure-reporting path |
+| Connected | One real change completes the full minimum operating loop |
+| Repeatable | Baselines, failure classification, and recurring scorecard review |
+| Measured | Production failures create owned corrective work and recovery paths are exercised |
+| Closed loop | Expansion preserves ownership, controls, and verification in each new domain |
 
 ---
 
 ## 30 / 60 / 90 rollout
 
-**Days 1–30 · Foundation — wire it up, prove the loop**
-- Build the three agents; train on existing docs (F1)
-- Commit MCP config + instruction-file guidance to every active repo (F2, F3)
-- Ship the C1 knowledge-push workflow in one repo
-- Developers start A2/A3 habitually
+These are review horizons, not permission deadlines. A team remains at the current horizon until its exit evidence is complete.
 
-**Days 31–60 · Habits — make the plays routine**
-- C1 in all repos; C2 becomes PR convention
-- PM specs via A1; agent status via F4
-- Support simulations after each release (B1); feedback loop running (B3)
-- First weekly triage routine (A5) and gap review (C3)
+**Days 1–30 · Foundation — connect safely and complete one loop.** Name owners, inventory approved sources, configure one repository with read-only MCP access, capture a baseline, and run one real change through Ground → Specify → Plan → Build → Review → Refresh → Verify. Knowledge writes remain in dry-run mode until the platform and documentation owners approve the exact destination and recovery path.
 
-**Days 61–90 · Automation — close the outer loop**
-- Spec-aware review skill on PRs (A4)
-- Escalation-to-issue pipeline live; draft-PR class piloted (B2)
-- Company-wide answer desk rollout (B4)
-- Review metrics; decide what to widen or kill
+**Days 31–60 · Repeatability — make the same loop work without heroics.** Complete additional changes in the same domain, make documentation co-ship routine, review failures weekly, and enable only the approved knowledge-write path behind a protected environment. Use the scorecard to distinguish real improvement from added process.
+
+**Days 61–90 · Evidence-based expansion — widen, change, narrow, or stop.** Review outcome and control evidence. Widen to at most one additional repository or domain only if ownership and recovery capacity scale with it. Scheduled triage, issue filing, and draft-pull-request automation stay at proposal or dry-run level until they separately pass the governance gates.
 
 ---
 
 ## Layer 2 — Agents as code: the raia Agent DevKit
 
-This playbook covers **layer 1**: using raia agents inside the *software* development lifecycle. The natural next question is who applies that same discipline to the **agents themselves** — today an agent's prompt, skills, knowledge, and guardrails are edited live in Launch Pad, with no diff, no review, no release gate, and no rollback.
-
-[`docs/devkit-spec/`](docs/devkit-spec/) contains the implementation-ready build specification for the **raia Agent DevKit**: a harness-neutral CLI/SDK (plus a thin Claude Code plugin) that manages a raia agent as versioned software through a raia-native lifecycle — **define → diff → validate → evaluate → review → release → stage → observe → learn**. Key properties: deterministic semantic diffs of agent behavior, evaluation gates with immutable evidence, idempotent releases, staging-only deployment from the coding harness, and a fail-closed security model.
-
-The two layers close the same loop at different levels:
+This playbook is **Layer 1**: using raia agents inside the software-development lifecycle. The [raia Agent DevKit](https://github.com/raia-ai/raia-agent-devkit) is **Layer 2**: applying version control, deterministic validation, evaluation gates, and staged releases to the agents themselves.
 
 | | Layer 1 — this playbook | Layer 2 — Agent DevKit |
 |---|---|---|
-| Versioned artifact | Application code | The raia agent itself (manifest, prompts, evals) |
-| Knowledge flow | Merge retrains the org's agents (C1) | Traces become regression evals (`raia learn`) |
-| Review gate | Spec-aware PR review (A4) | Semantic diff + evaluation gates + release policy |
-| Deploy safety | Humans gate every merge | Immutable candidates, staging-only from Claude |
+| Versioned artifact | Application code, specifications, and documentation | Agent manifest, prompts, tools, knowledge references, guardrails, and evaluations |
+| Learning flow | A merge refreshes organizational knowledge and is followed by a freshness check | Reviewed production traces become regression evaluations for a future agent version |
+| Review gate | Human-reviewed pull request plus specification-conformance evidence | Semantic diff, deterministic validation, evaluation evidence, and release policy |
+| Deployment boundary | Automation may prepare work; humans gate every merge | The coding harness may target staging; production remains outside the harness |
 
-**Status:** complete, validated specification package (36 files — normative schemas and contracts, the vendored raia external OpenAPI, the `helpdesk-agent` reference example, lifecycle framework, decision log, and acceptance checklist). Package integrity is pinned in `PACKAGE_MANIFEST.sha256`, and its own validators pass (`validate_package.py`, `preflight.mjs`). Implementation starts by placing this package at `docs/raia-devkit-spec/` in a dedicated repository and running [`docs/devkit-spec/CLAUDE_CODE_START_PROMPT.md`](docs/devkit-spec/CLAUDE_CODE_START_PROMPT.md) (WP0 + WP1 first).
+Read [AI-DLC Playbook and Agent DevKit](docs/agent-devkit-boundary.md) for the detailed boundary. The dedicated DevKit repository is the **only canonical source** for its specification, contracts, examples, implementation status, and code. This repository deliberately does not carry an editable copy.
+
+> **Current-status note:** the DevKit repository contains an implementation-ready specification and an initial WP0/WP1 plan. Check its own status tracker before presenting the CLI, SDK, plugin, or management provider as shipped functionality.
 
 ---
 
-*Written for any development team adopting raia as its agentic platform, with Claude Code as the reference coding agent — every play transfers to any MCP-capable equivalent. Endpoints and key rules taken from the raia Developer Hub (MCP: `api.raia2.com/mcp`; REST: Swagger at `api.raia2.com/api/external/docs`). The C1 workflow is a sketch — confirm the exact vector-store upload endpoint against the [OpenAPI spec](https://api.raia2.com/api/external/docs/openapi.json) before implementing. Snippets and play thresholds are starting points; tune them after your first 30 days.*
+*Written for teams adopting raia as their agentic platform, with Claude Code as the reference coding agent. Every play transfers to an MCP-capable equivalent. Configuration snippets, automation thresholds, and API examples are starting points: verify them against your environment, keep write paths disabled until reviewed, and tune the operating model with evidence from the pilot.*

@@ -1,0 +1,26 @@
+{
+  "agent": "raia-product",
+  "mode": "offline_fixture",
+  "question": "What approved behavior and policy constraints apply to order-status support?",
+  "answer": {
+    "summary": "Request an order number when missing, accept only the documented order identifier shape, provide tracking for shipped orders, never request a password, and escalate suspected fraud.",
+    "constraints": [
+      "AC-1: No function call without an order number.",
+      "AC-2: Valid identifiers use ORD- followed by six digits.",
+      "AC-3: Shipped orders include a tracking URL.",
+      "AC-4: Passwords must never be requested or echoed.",
+      "AC-5: Fraud or account-takeover language requires human escalation without a function call."
+    ],
+    "sources": [
+      {
+        "path": "specs/order-status.md",
+        "status": "approved"
+      },
+      {
+        "path": "evidence/customer-pattern.md",
+        "status": "approved_synthetic_pattern"
+      }
+    ],
+    "unresolved": []
+  }
+}

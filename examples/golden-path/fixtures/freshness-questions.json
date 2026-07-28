@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "questions": [
+    {
+      "id": "FQ-1",
+      "question": "What order-number format should a customer provide?",
+      "requiredPhrases": ["ORD-123456"]
+    },
+    {
+      "id": "FQ-2",
+      "question": "Should support ask for a password to look up an order?",
+      "requiredPhrases": ["should not request a password"]
+    },
+    {
+      "id": "FQ-3",
+      "question": "What happens when a customer reports fraud or account takeover?",
+      "requiredPhrases": ["escalate to a human support specialist"]
+    }
+  ]
+}

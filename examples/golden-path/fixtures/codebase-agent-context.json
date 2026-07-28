@@ -1,0 +1,28 @@
+{
+  "agent": "raia-codebase",
+  "mode": "offline_fixture",
+  "question": "What implementation constraints should the order-status feature follow?",
+  "answer": {
+    "summary": "Keep validation and routing deterministic, inject the lookup dependency, return structured results, and avoid network or repository writes in the domain function.",
+    "constraints": [
+      "Use a full-string regular expression for ORD- followed by six digits.",
+      "Perform fraud classification before identifier validation or lookup.",
+      "Inject lookupOrder instead of calling a live service.",
+      "Return a structured action so a channel adapter can render customer-facing text.",
+      "Do not log or return credentials."
+    ],
+    "sources": [
+      {
+        "path": "src/order-status.mjs",
+        "status": "planned_reference_implementation"
+      },
+      {
+        "path": "test/order-status.test.mjs",
+        "status": "planned_acceptance_tests"
+      }
+    ],
+    "unresolved": [
+      "A real deployment must define the support escalation destination outside this example."
+    ]
+  }
+}

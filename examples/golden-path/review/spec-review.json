@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "golden-path-order-status-v1",
+  "reviewer": {
+    "type": "human",
+    "role": "reference-example-maintainer"
+  },
+  "reviewedAt": "2026-07-27T00:00:00Z",
+  "status": "approved_for_local_reference_example",
+  "reviewedArtifacts": {
+    "evidence/customer-pattern.md": "faa3b1b498f68503292068c19adadae8ef4e88ba3c38f438e2031b1e416e142e",
+    "specs/order-status.md": "e6d5c707e52db5d8a6dd8e9ae32b6e5cf5af3d09621067540272ed61bc28efe7",
+    "fixtures/product-agent-context.json": "9fb17c4d01f0c0b7625b819b3e23abf1fb28d4ea00aed2f0217260c0bc2a6736",
+    "fixtures/codebase-agent-context.json": "af35e442c60994587dfb71ce60e9ce336dd3e1338a84bb13db9d58d00a12d299",
+    "fixtures/freshness-questions.json": "e369a067ce634bb17218e38df721162faf016bde6072d5fd5167ee0b5d6313fe",
+    "plans/order-status-plan.md": "1e6f6e0d7004f2f786eba31a8774d1edc39c6a1b65a7901adef0191af67c87d5",
+    "src/order-status.mjs": "3fb8462246e53d2bb4e29f5381c039e896c57411bb163bf813da28dc92a549cf",
+    "test/order-status.test.mjs": "2c39d8f388d7f1413bf3d238cff2a9d5f3a943a960e8d59578f52e64b075a73f",
+    "docs/order-status.md": "55fbbfdbca9bf6ba4ff2c30368ecfeb1cffe3f62f0932894883ae0759d7cfee8"
+  },
+  "criteria": [
+    {
+      "id": "AC-1",
+      "result": "pass",
+      "implementation": "src/order-status.mjs",
+      "test": "AC-1: missing order number requests one without a lookup"
+    },
+    {
+      "id": "AC-2",
+      "result": "pass",
+      "implementation": "src/order-status.mjs",
+      "test": "AC-2: malformed order identifiers never trigger a lookup"
+    },
+    {
+      "id": "AC-3",
+      "result": "pass",
+      "implementation": "src/order-status.mjs",
+      "test": "AC-3: a shipped order returns status and an HTTPS tracking URL"
+    },
+    {
+      "id": "AC-4",
+      "result": "pass",
+      "implementation": "src/order-status.mjs",
+      "test": "AC-4: a supplied password is never echoed"
+    },
+    {
+      "id": "AC-5",
+      "result": "pass",
+      "implementation": "src/order-status.mjs",
+      "test": "AC-5: suspected fraud escalates before identifier validation or lookup"
+    }
+  ],
+  "confirmedMismatches": [],
+  "specGaps": [
+    {
+      "id": "GAP-1",
+      "summary": "A real deployment must define and approve the human escalation destination.",
+      "owner": "support_and_platform_owners",
+      "blocks": "live_deployment"
+    }
+  ],
+  "limitations": [
+    "This approval covers only the deterministic local reference example.",
+    "It is not approval to call a live raia endpoint, update a real agent, merge code, or perform a production action."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "raia-ai-dlc-golden-path",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/order-status.test.mjs",
+    "dry-run": "node scripts/run-golden-path.mjs",
+    "apply-mock-sync": "node scripts/run-golden-path.mjs --apply-mock-sync",
+    "clean": "node scripts/clean.mjs"
+  }
+}
