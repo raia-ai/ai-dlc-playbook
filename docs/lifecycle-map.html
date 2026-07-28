@@ -304,10 +304,14 @@
 
 <div class="wrap">
 
+<aside style="margin-top:24px;padding:14px 16px;border:1px solid var(--amber);border-radius:10px;background:var(--amber-soft);color:var(--ink);">
+  <strong>Archived strategy snapshot.</strong> This visualization predates the v0.2 operating-model improvements. Use <a href="../README.md">README.md</a> for the maintained minimum loop, governance gates, metrics, and plan-first knowledge-refresh workflow.
+</aside>
+
 <header class="hero">
   <div class="eyebrow">Working session · raia platform strategy · July 2026</div>
   <h1>Closing the loop: <span class="r">raia agents</span> inside the <span class="c">AI development lifecycle</span></h1>
-  <p class="lede">raia holds the organization's knowledge and talks to everyone. Claude Code holds the repository and ships the code. The AI&nbsp;DLC is what happens when the two are wired together — so product knowledge flows into every coding session, and everything shipped flows back into the agents' training.</p>
+  <p class="lede">raia holds the organization's knowledge and talks to everyone. Claude Code holds the repository and ships the code. The AI&nbsp;DLC is what happens when the two are wired together — so product knowledge flows into every coding session, and approved sources flow back through a governed refresh and verification step.</p>
 </header>
 
 <section>
@@ -444,12 +448,12 @@
     <div class="phase knowledge">
       <div class="pcard pm loopback">
         <div class="who">PM · zero-lag enablement</div>
-        <p>The moment the release merges, the Support Agent and Product Agent already know about it. No "update the help center" backlog; support answers reflect the new behavior on day one.</p>
+        <p>The merge creates a traceable refresh plan. After the approved adapter applies it, product and support owners verify representative answers before declaring the release support-ready.</p>
       </div>
-      <div class="node"><div class="num">6</div><div class="pname">Ship</div><div class="pgoal">Merge = retrain</div></div>
+      <div class="node"><div class="num">6</div><div class="pname">Ship</div><div class="pgoal">Merge triggers refresh</div></div>
       <div class="pcard dev loopback">
         <div class="who">Dev · CI post-merge hook</div>
-        <p>CI generates release notes and updated docs, then calls <span class="tool">add_agent_file_to_vector_store</span> to push them into raia Command. One API call closes the loop — the org's agents are never behind the codebase.</p>
+        <p>CI plans the approved source changes without a remote write. A protected adapter uploads and verifies the replacement, retains a receipt, and removes the stale source only after the new one is usable.</p>
       </div>
     </div>
 

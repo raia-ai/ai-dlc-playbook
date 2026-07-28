@@ -1,0 +1,141 @@
+# Play C1 — "Merge triggers a governed knowledge refresh"
+#
+# This public reference intentionally produces a reviewable knowledge-refresh
+# plan and performs NO remote write. It can run on every merge without exposing
+# a raia credential or relying on undocumented replacement behavior.
+#
+# To adopt:
+#   1. Copy this file and workflows/scripts/plan-knowledge-refresh.mjs into the
+#      same paths in your repository.
+#   2. Define RAIA_KNOWLEDGE_TARGET_ALIAS as a repository variable. Use a stable
+#      human-readable alias such as "support-docs" — never an agent ID or key.
+#   3. Review the uploaded plan artifact and path routing in a pilot.
+#   4. Implement live apply as a separate, contract-tested job protected by a
+#      GitHub environment with required human reviewers. Pin the selected US or
+#      EU raia OpenAPI contract first:
+#        https://api.raia2.com/api/external/docs/openapi.json
+#        https://api-eu.raia2.com/api/external/docs/openapi.json
+#   5. A live adapter must upload the replacement before deleting stale files,
+#      poll vector-store status, retain receipts, and run retrieval verification.
+#
+# The published contract uses /external/agent-files/* and Agent-Secret-Key.
+# Uploading and adding to the vector store are separate operations. Do not use
+# the older illustrative /external/agents/files endpoint.
+
+name: Plan raia knowledge refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**/*.md"
+      - "CHANGELOG.md"
+      - "README.md"
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: "Ancestor commit SHA to compare"
+        required: true
+        type: string
+      head_sha:
+        description: "Descendant commit SHA to compare"
+        required: true
+        type: string
+      target_alias:
+        description: "Approved lowercase routing alias; falls back to repository variable"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: raia-knowledge-plan-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan-knowledge-refresh:
+    name: Plan knowledge refresh — no remote writes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout complete history without retained credentials
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve and validate commit range
+        id: refs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BASE: ${{ github.event.before }}
+          PUSH_HEAD: ${{ github.sha }}
+          MANUAL_BASE: ${{ inputs.base_sha }}
+          MANUAL_HEAD: ${{ inputs.head_sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            BASE="$MANUAL_BASE"
+            HEAD="$MANUAL_HEAD"
+          else
+            BASE="$PUSH_BASE"
+            HEAD="$PUSH_HEAD"
+          fi
+
+          if [ -z "$BASE" ] || [ -z "$HEAD" ]; then
+            echo "Base and head SHAs are required" >&2
+            exit 1
+          fi
+          if printf '%s' "$BASE" | grep -Eq '^0+$'; then
+            echo "A branch-creation push has no safe comparison base; rerun manually with an ancestor SHA" >&2
+            exit 1
+          fi
+          if ! printf '%s\n%s\n' "$BASE" "$HEAD" | grep -Eq '^[0-9a-fA-F]{7,40}$'; then
+            echo "Commit references must be Git SHAs" >&2
+            exit 1
+          fi
+
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "head=$HEAD" >> "$GITHUB_OUTPUT"
+
+      - name: Build the fail-closed refresh plan
+        env:
+          TARGET_ALIAS: ${{ inputs.target_alias || vars.RAIA_KNOWLEDGE_TARGET_ALIAS }}
+        run: |
+          set -euo pipefail
+          if [ -z "$TARGET_ALIAS" ]; then
+            echo "Set the RAIA_KNOWLEDGE_TARGET_ALIAS repository variable or manual input" >&2
+            exit 1
+          fi
+
+          node workflows/scripts/plan-knowledge-refresh.mjs \
+            --base "${{ steps.refs.outputs.base }}" \
+            --head "${{ steps.refs.outputs.head }}" \
+            --target "$TARGET_ALIAS" \
+            --output artifacts/knowledge-refresh-plan.json
+
+      - name: Summarize the proposed refresh
+        run: |
+          set -euo pipefail
+          {
+            echo "## raia knowledge-refresh plan"
+            echo
+            echo "**Mode:** plan only — no remote write occurred."
+            echo
+            echo '| Action | Path | SHA-256 |'
+            echo '|---|---|---|'
+            jq -r '.changes[] | "| \(.action) | `\(.path)` | \(.sha256 // "n/a") |"' \
+              artifacts/knowledge-refresh-plan.json
+            echo
+            echo "A live adapter requires protected-environment approval, a pinned regional contract, replacement rollback, receipts, and post-refresh verification."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain the immutable plan as workflow evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: raia-knowledge-refresh-plan-${{ github.sha }}
+          path: artifacts/knowledge-refresh-plan.json
+          if-no-files-found: error
+          retention-days: 30

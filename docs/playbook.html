@@ -218,6 +218,10 @@
 
 <div class="wrap">
 
+<aside style="margin-top:24px;padding:14px 16px;border:1px solid var(--amber);border-radius:10px;background:var(--amber-soft);color:var(--ink);">
+  <strong>Archived presentation snapshot.</strong> This rendering predates the v0.2 operating-model improvements. Use <a href="../README.md">README.md</a> for the maintained playbook, governance gates, metrics, and plan-first knowledge-refresh workflow.
+</aside>
+
 <header class="hero">
   <div class="eyebrow">Playbook for development teams building on raia · v1 · July 2026</div>
   <h1>The <em>raia × AI coding agent</em> playbook</h1>
@@ -240,9 +244,9 @@
   <h2>Four rules that make everything else work</h2>
   <div class="principles">
     <div class="principle"><b>1 · One brain per domain, not per person.</b><span> Knowledge lives in named raia agents (Codebase, Product, Support/Docs) trained in raia Command — never in someone's head, a stale wiki, or a private chat. Tools and people both query the same agents.</span></div>
-    <div class="principle"><b>2 · Merging is retraining.</b><span> Any merge that changes behavior must update the vector stores in the same pipeline run. If the Support Agent can answer questions about a feature the day it ships, the loop is closed; if not, a play was skipped.</span></div>
+    <div class="principle"><b>2 · Merging triggers retraining.</b><span> A behavior-changing merge creates an immutable refresh plan. A protected adapter applies it only after approval, retains a receipt, and verifies freshness. A successful merge or upload alone does not close the loop.</span></div>
     <div class="principle"><b>3 · Agents brief, humans decide, Claude Code executes.</b><span> raia agents supply context and evidence; PMs and developers make the calls; Claude Code does the mechanical work. Escalation paths (Copilot takeover, PR review) stay human at every step.</span></div>
-    <div class="principle"><b>4 · Write once, near the code.</b><span> Specs, ADRs, and docs live in the repo as Markdown. From there they flow automatically to vector stores and docs sites. Never author knowledge directly in a place that only one system can read.</span></div>
+    <div class="principle"><b>4 · Write once, near the code.</b><span> Specs, ADRs, and docs live in the repo as Markdown. Reviewed pipelines can route approved sources to vector stores and docs sites. Never author knowledge directly in a place that only one system can read.</span></div>
   </div>
 </section>
 
@@ -387,14 +391,14 @@
 
   <div class="play support">
     <div class="play-head"><span class="play-id">B1</span><h4>Day-one support readiness</h4></div>
-    <div class="meta"><span><b>Who:</b> automated (CI) + Support lead</span><span><b>When:</b> every release</span><span><b>Where:</b> CI → raia Command</span></div>
-    <p>Because Play C1 pushes release notes and changed docs to the Support &amp; Docs Agent's vector store on merge, the agent can answer questions about a feature the day it ships. The support lead's job shifts to verification:</p>
+    <div class="meta"><span><b>Who:</b> CI planner + write-path owner + Support lead</span><span><b>When:</b> every release</span><span><b>Where:</b> CI → protected adapter → raia Command</span></div>
+    <p>Play C1 creates a reviewable refresh plan. After the approved adapter applies it and retains a receipt, the support lead verifies that the Support &amp; Docs Agent actually learned the release:</p>
     <ol>
       <li>After each release, run 3–5 Copilot <b>simulations</b> asking about the new behavior.</li>
       <li>Check Admin Mode to confirm the agent retrieved the new release notes, not stale articles.</li>
       <li>Gaps become docs tickets (Play C3), not tribal-knowledge Slack threads.</li>
     </ol>
-    <div class="signal"><b>Success signal:</b> zero-lag between "shipped" and "supportable"; escalation rate on new features trends down release over release.</div>
+    <div class="signal"><b>Success signal:</b> representative freshness checks pass before the release is declared support-ready; escalation rate on new features trends down.</div>
   </div>
 
   <div class="play support">
@@ -424,24 +428,21 @@
   <div class="track-head track-docs"><span class="track-dot"></span><h3>Track C · Documentation — the flywheel</h3><span class="count">3 plays</span></div>
 
   <div class="play docs">
-    <div class="play-head"><span class="play-id">C1</span><h4>Merge = retrain (the keystone play)</h4></div>
-    <div class="meta"><span><b>Who:</b> automated (CI)</span><span><b>When:</b> every merge to main</span><span><b>Where:</b> GitHub Actions → raia API</span></div>
-    <p>One post-merge job per repo keeps the vector stores current. Because raia's pipeline works best on Markdown, and all three repos already keep docs as Markdown, the job is mostly plumbing:</p>
-    <pre><span class="cm"># .github/workflows/knowledge-push.yml (sketch)</span>
-<span class="k">on:</span> push to main, paths: [<span class="s">"docs/**"</span>, <span class="s">"CHANGELOG.md"</span>]
+    <div class="play-head"><span class="play-id">C1</span><h4>Merge triggers a governed knowledge refresh (the keystone play)</h4></div>
+    <div class="meta"><span><b>Who:</b> CI planner + approved write-path owner</span><span><b>When:</b> every merge to main</span><span><b>Where:</b> GitHub Actions → protected adapter → raia API</span></div>
+    <p>The public reference emits an immutable plan and performs no remote write. Live apply is a separate, contract-tested capability behind a protected environment and named approval gate:</p>
+    <pre><span class="cm"># .github/workflows/knowledge-refresh.yml</span>
+<span class="k">permissions:</span> contents: read
 <span class="k">steps:</span>
-  - detect changed Markdown files
-  - <span class="cm"># upload each to the agent's vector store via the</span>
-    <span class="cm"># external API (see Swagger: api.raia2.com/api/external/docs)</span>
-    curl -H <span class="s">"Agent-Secret-Key: $RAIA_AGENT_KEY"</span> \
-         -F <span class="s">"file=@docs/changed-file.md"</span> \
-         $RAIA_VECTOR_UPLOAD_ENDPOINT
-  - <span class="cm"># replace superseded versions, don't accumulate duplicates</span></pre>
+  - inspect committed approved-source changes
+  - validate routing against a human-readable target alias
+  - emit an immutable refresh-plan artifact
+  - <span class="cm"># no raia credential and no remote write in this job</span></pre>
     <ul>
-      <li>Route by audience: <code>docs/</code> + ADRs → Codebase Agent; specs + release notes → Product Agent; user-facing docs + changelog → Support &amp; Docs Agent.</li>
-      <li>Delete-and-replace superseded files (the API supports file removal) so retrieval never surfaces stale versions.</li>
+      <li>Route by audience using explicit approved policy; never infer a destination from a secret or raw agent ID.</li>
+      <li>A live adapter uploads and verifies the replacement before removing the stale source, then retains a receipt and freshness evidence.</li>
     </ul>
-    <div class="signal"><b>Success signal:</b> ask any agent about a feature merged yesterday — the answer reflects it. Spot-check weekly.</div>
+    <div class="signal"><b>Success signal:</b> the plan is traceable to the merge, the live receipt matches the approved destination, and representative questions retrieve the new source.</div>
   </div>
 
   <div class="play docs">
@@ -451,7 +452,7 @@
     <ol>
       <li>Before opening the PR: "Update the affected docs under <code>docs/</code> and draft the changelog entry for this change."</li>
       <li>If your repos enforce docs discipline (generated references, validation scripts), the agent runs those checks as part of the task — and adding such checks is itself a worthwhile first move.</li>
-      <li>Reviewer reviews docs and code as one unit; merge triggers C1 and the knowledge propagates everywhere.</li>
+      <li>The reviewer evaluates docs and code as one unit; merge triggers C1's plan-first refresh and the approved adapter propagates the change.</li>
     </ol>
     <div class="signal"><b>Success signal:</b> docs PRs stop existing as a separate (perpetually late) category; docs-freshness complaints from support drop.</div>
   </div>
