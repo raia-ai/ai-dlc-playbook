@@ -16,6 +16,9 @@ Twelve plays across three tracks, plus the one-time foundation that makes them a
 | `templates/` | Drop-in configs: `.mcp.json`, IDE variant, instruction-file snippets |
 | `workflows/knowledge-push.yml` | The C1 "merge = retrain" CI job, ready to adapt |
 | `skills/spec-review/` | The A4 spec-aware review skill for Claude Code |
+| `docs/presentation-guide.md` | Slide-by-slide source material for presenting this playbook |
+| `docs/raia-ai-dlc-presentation.pptx` | The 16-slide deck with speaker notes |
+| `docs/devkit-spec/` | **Layer 2:** build spec for the raia Agent DevKit — the DLC applied to raia agents themselves (see below) |
 
 ---
 
@@ -268,6 +271,25 @@ The docs backlog comes from real retrieval failures, not guesses:
 - Escalation-to-issue pipeline live; draft-PR class piloted (B2)
 - Company-wide answer desk rollout (B4)
 - Review metrics; decide what to widen or kill
+
+---
+
+## Layer 2 — Agents as code: the raia Agent DevKit
+
+This playbook covers **layer 1**: using raia agents inside the *software* development lifecycle. The natural next question is who applies that same discipline to the **agents themselves** — today an agent's prompt, skills, knowledge, and guardrails are edited live in Launch Pad, with no diff, no review, no release gate, and no rollback.
+
+[`docs/devkit-spec/`](docs/devkit-spec/) contains the implementation-ready build specification for the **raia Agent DevKit**: a harness-neutral CLI/SDK (plus a thin Claude Code plugin) that manages a raia agent as versioned software through a raia-native lifecycle — **define → diff → validate → evaluate → review → release → stage → observe → learn**. Key properties: deterministic semantic diffs of agent behavior, evaluation gates with immutable evidence, idempotent releases, staging-only deployment from the coding harness, and a fail-closed security model.
+
+The two layers close the same loop at different levels:
+
+| | Layer 1 — this playbook | Layer 2 — Agent DevKit |
+|---|---|---|
+| Versioned artifact | Application code | The raia agent itself (manifest, prompts, evals) |
+| Knowledge flow | Merge retrains the org's agents (C1) | Traces become regression evals (`raia learn`) |
+| Review gate | Spec-aware PR review (A4) | Semantic diff + evaluation gates + release policy |
+| Deploy safety | Humans gate every merge | Immutable candidates, staging-only from Claude |
+
+**Status:** specification stage. The build spec references a fuller package (`contracts/`, `AGENT_LIFECYCLE_FRAMEWORK.md`, `examples/helpdesk-agent/`, `DECISIONS_REQUIRED.md`) that must accompany it before the kickoff prompt in [`docs/devkit-spec/CLAUDE_CODE_KICKOFF_PROMPT.md`](docs/devkit-spec/CLAUDE_CODE_KICKOFF_PROMPT.md) can be executed.
 
 ---
 
